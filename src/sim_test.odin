@@ -85,6 +85,35 @@ dock_repairs_hull :: proc(t: ^testing.T) {
 }
 
 @(test)
+docking_computer_docks_when_in_range :: proc(t: ^testing.T) {
+	init_models()
+	new_game()
+	defer free_game()
+	launch()
+	clear(&g.ents)
+	g.station.spin = 0
+	// nose into the slot but rolled 90 degrees and too fast for a manual dock
+	g.p.b = g.station.b
+	g.p.b.f = -g.station.b.f
+	g.p.b.r = g.station.b.u
+	orthonormalize(&g.p.b)
+	g.p.pos = {0, 0, ST_L + 600}
+	g.p.speed = 300
+	testing.expect(t, !dock_comp_try(true)) // not fitted
+	g.p.dock_comp = true
+	testing.expect(t, !dock_comp_try(false)) // key not pressed
+	g.p.pos = {0, 0, ST_L + 2000}
+	testing.expect(t, !dock_comp_try(true)) // too far from the station
+	g.p.pos = {0, 0, ST_L + 600}
+	saved_f := g.p.b.f
+	g.p.b.f = -saved_f
+	testing.expect(t, !dock_comp_try(true)) // pointing away from the slot
+	g.p.b.f = saved_f
+	testing.expect(t, dock_comp_try(true))
+	testing.expect_value(t, g.state, State.Docked)
+}
+
+@(test)
 trade_and_equip_money :: proc(t: ^testing.T) {
 	new_game()
 	defer free_game()
@@ -98,7 +127,7 @@ trade_and_equip_money :: proc(t: ^testing.T) {
 	testing.expect_value(t, g.p.cargo[0], 0)
 	testing.expect_value(t, g.p.cash, 250)
 	g.p.cash = 100
-	buy_equip(3) // galactic drive costs 50000
+	buy_equip(4) // galactic drive costs 50000
 	testing.expect(t, !g.p.gal_drive)
 	testing.expect_value(t, g.p.cash, 100)
 	g.p.fuel = MAX_FUEL - 10

@@ -20,6 +20,7 @@ save_round_trip_and_bad_file :: proc(t: ^testing.T) {
 	g.p.cash = 1234
 	g.p.cargo[3] = 5
 	g.p.fugitive = true
+	g.p.dock_comp = true
 	testing.expect(t, save_game())
 
 	new_game()
@@ -28,6 +29,7 @@ save_round_trip_and_bad_file :: proc(t: ^testing.T) {
 	testing.expect_value(t, g.p.cash, 1234)
 	testing.expect_value(t, g.p.cargo[3], 5)
 	testing.expect(t, g.p.fugitive)
+	testing.expect(t, g.p.dock_comp)
 
 	// an unreadable save is kept as save.json.bad, not overwritten
 	path, _ := filepath.join({dir, "save.json"}, context.temp_allocator)

@@ -99,12 +99,20 @@ Pure 2D raylib line drawing with a hand-written 3D pipeline in `render.odin`:
 
 Mesh faces are limited to 32 per model (u32 masks) and must be planar; `set_model` asserts both.
 
+## Docking computer
+
+Bought in the F4 equipment screen (`Player.dock_comp`). In flight, `dock_comp_ready` is true when
+the ship is in front of the slot (within 3x the slot size, up to 1500 units out) and nose-on to it;
+the HUD then shows a hint and C calls `do_dock` via `dock_comp_try`. Roll and speed are ignored.
+It is not an autopilot, and the strict `dock_check` still applies without it.
+
 ## Persistence
 
 `save.odin` writes `save.json` in the user config dir (`Galaxies/`) on launch and dock (and F9).
 Writes go to `save.json.tmp` then rename. `load_game` validates via `apply_save`
 (range checks, clamping); an unusable file is renamed `save.json.bad`. Only player progress is
-stored (galaxy, system, target, cash, fuel, missiles, cargo, kills, flags, epoch). Flight state is
+stored (galaxy, system, target, cash, fuel, missiles, cargo, kills, flags such as the galactic
+hyperdrive and docking computer, epoch). Flight state is
 never saved: you always resume docked. After death, Enter reloads the last save.
 
 ## Testing

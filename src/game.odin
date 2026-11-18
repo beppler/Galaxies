@@ -70,6 +70,7 @@ Player :: struct {
 	kills:                int,
 	fugitive:             bool,
 	gal_drive:            bool,
+	dock_comp:            bool,
 	laser_cd, missile_cd: f32,
 	turn_vel:             [3]f32, // smoothed roll/pitch/yaw input (-1..1)
 }
@@ -619,6 +620,26 @@ dock_check :: proc() -> (can_dock: bool, inside_hull: bool) {
 	return
 }
 
+// Docking computer: in front of the slot, nose toward it. Roll and speed don't matter.
+dock_comp_ready :: proc() -> bool {
+	if !g.p.dock_comp { return false }
+	st := &g.station
+	rel := g.p.pos - st.pos
+	lx := linalg.dot(rel, st.b.r)
+	ly := linalg.dot(rel, st.b.u)
+	lz := linalg.dot(rel, st.b.f)
+	return abs(lx) < 3 * SLOT_W && abs(ly) < 3 * SLOT_H && lz > ST_L + 15 && lz < ST_L + 1500 &&
+		linalg.dot(g.p.b.f, -st.b.f) > 0.9
+}
+
+dock_comp_try :: proc(pressed: bool) -> bool {
+	if pressed && dock_comp_ready() {
+		do_dock()
+		return true
+	}
+	return false
+}
+
 // ---------------------------------------------------------------- per-frame
 
 // Move vel toward target; frame-rate independent, ~0.12s to settle.
@@ -698,7 +719,7 @@ flight_update :: proc(dt: f32) {
 	roll(&st.b, st.spin * dt)
 	orthonormalize(&st.b)
 	can_dock, inside := dock_check()
-	if can_dock {
+	if can_dock || dock_comp_try(g.p.dock_comp && key_pressed(.C)) {
 		do_dock()
 		return
 	}

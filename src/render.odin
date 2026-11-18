@@ -365,6 +365,8 @@ draw_hud :: proc() {
 		can, _ := dock_check()
 		if can {
 			text_c("DOCKING", view.cx, 20, 20, COL_GREEN)
+		} else if dock_comp_ready() {
+			text_c("DOCKING COMPUTER: PRESS C", view.cx, 20, 20, COL_GREEN)
 		}
 	}
 }
