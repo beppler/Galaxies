@@ -7,23 +7,54 @@ the design of the original *Elite* (3x16-bit "twist" seed, 8 galaxies x 256 syst
 Lave) and may be closely derived from it.
 
 ## Build
-Toolchain is pinned in `mise.toml` (`mise install`). Linux also needs X11/GL/ALSA dev
+
+Toolchain is pinned in `mise.toml` (`mise install`).
+
+Linux also needs X11/GL/ALSA dev
 packages (`libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libasound2-dev`) and clang.
 
-    ./build.sh        # or build.bat on Windows;  ./build.sh run | test
+```shell
+./build.sh        # or build.bat on Windows;  ./build.sh run | test
+```
 
 ## Controls
-Flight: arrows roll/pitch, Q/E yaw, W/S speed, SPACE laser, M missile, T compass station/planet, H hyperspace to the
-selected system, G galactic hyperdrive, F3 galactic chart (ENTER sets destination), F11 fullscreen.
+
+### Flight
+
+| Key | Action |
+| --- | ------ |
+| Arrows | Roll / pitch |
+| Q / E | Yaw |
+| W / S | Speed up / down |
+| Space | Fire laser |
+| M | Fire missile |
+| T | Compass: station / planet |
+| H | Hyperspace to selected system |
+| G | Galactic hyperdrive |
+| F3 | Galactic chart (Enter sets destination) |
+| F11 | Fullscreen |
+
+### Docked
+
+| Key | Action |
+| --- | ------ |
+| F1 | Status |
+| F2 | Market (B/S buy/sell, Shift = x10) |
+| F3 | Galactic chart |
+| F4 | Equipment |
+| F5 / L | Launch |
+| F9 | Save |
+
 Docking: fly nose-first into the rotating station slot, match its roll, speed < 220.
-Docked: F1 status, F2 market (B/S buy/sell, Shift = x10), F3 chart, F4 equipment, F5/L launch, F9 save.
 
 Saves go to the user config dir (`Galaxies/save.json`) on dock/launch.
 
 ## Ideas / not yet done
+
 Missions, more ship types, gamepad support.
 
 ## License
+
 The code is released under the [MIT License](LICENSE); this does not extend to any rights in
 the original game that the galaxy and market data may derive from. The bundled font, JetBrains Mono, is under
 the SIL Open Font License (`assets/JetBrainsMono-OFL.txt`).
