@@ -36,6 +36,7 @@ Kind :: enum u8 {
 Entity :: struct {
 	id:          int,
 	kind:        Kind,
+	ship:        ShipId, // NPC hull; only meaningful for Pirate/Trader/Police
 	model:       ModelId,
 	pos, vel:    Vec3,
 	b:           Basis,
@@ -378,7 +379,7 @@ kill_entity :: proc(e: ^Entity, by_player: bool) {
 	case .Pirate:
 		if by_player {
 			g.p.kills += 1
-			bounty := 1000 if e.model == .Sidewinder else 2500
+			bounty := ship_defs[e.ship].bounty
 			g.p.cash += bounty
 			message("Pirate destroyed! Bounty %s", cr(bounty))
 		}
@@ -511,7 +512,7 @@ steer :: proc(e: ^Entity, target: Vec3, dt: f32) {
 enemy_fire :: proc(e: ^Entity) {
 	e.fire_cd = 0.6 + rnd() * 0.8
 	if rnd() < 0.55 {
-		damage_player(5 if e.kind == .Pirate else 4)
+		damage_player(ship_defs[e.ship].fire_dmg)
 	} else {
 		play(.Laser)
 	}
@@ -559,6 +560,19 @@ update_ship_ai :: proc(e: ^Entity, dt: f32) {
 	}
 }
 
+// Uniform pick; repeat an id to weight it.
+pick_ship :: proc(ids: []ShipId) -> ShipId {
+	return ids[rand.int_max(len(ids))]
+}
+
+spawn_ship :: proc(id: ShipId, kind: Kind, pos: Vec3, b: Basis, speed: f32) {
+	d := ship_defs[id]
+	spawn(Entity {
+		kind = kind, ship = id, model = d.model, pos = pos, b = b,
+		hp = d.hp, max_hp = d.hp, max_speed = d.max_speed, turn = d.turn, speed = speed,
+	})
+}
+
 spawn_enemy :: proc() {
 	p := &g.p
 	gov := cur_sys().gov
@@ -573,32 +587,16 @@ spawn_enemy :: proc() {
 	if r < pirate_p {
 		n := 1 + rand.int_max(2)
 		for _ in 0 ..< n {
-			big := rnd() < 0.35
-			hp: f32 = 120 if big else 60
-			spawn(Entity {
-				kind = .Pirate, model = .Cobra if big else .Sidewinder,
-				pos = pos + random_unit(rnd) * 200, b = bb,
-				hp = hp, max_hp = hp, max_speed = 300 if big else 340, turn = 1.6 if big else 2.0,
-				speed = 200,
-			})
+			spawn_ship(pick_ship({.Cobra, .Sidewinder, .Sidewinder, .Krait}), .Pirate, pos + random_unit(rnd) * 200, bb, 200)
 		}
 		play(.Beep)
 	} else if r < pirate_p + 0.35 {
-		spawn(Entity {
-			kind = .Trader, model = .Cobra, pos = pos, b = bb,
-			hp = 90, max_hp = 90, max_speed = 220, turn = 0.9, speed = 100,
-		})
+		spawn_ship(pick_ship({.Hauler, .Freighter}), .Trader, pos, bb, 100)
 	} else {
-		spawn(Entity {
-			kind = .Police, model = .Viper, pos = pos, b = bb,
-			hp = 150, max_hp = 150, max_speed = 380, turn = 1.8, speed = 200,
-		})
+		spawn_ship(pick_ship({.Viper, .Viper, .Cutter}), .Police, pos, bb, 200)
 	}
 	if p.fugitive && rnd() < 0.6 {
-		spawn(Entity {
-			kind = .Police, model = .Viper, pos = p.pos + random_unit(rnd) * 2500, b = bb,
-			hp = 150, max_hp = 150, max_speed = 380, turn = 1.8, speed = 200,
-		})
+		spawn_ship(pick_ship({.Viper, .Viper, .Cutter}), .Police, p.pos + random_unit(rnd) * 2500, bb, 200)
 	}
 }
 

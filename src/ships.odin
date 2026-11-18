@@ -8,11 +8,44 @@ ModelId :: enum {
 	Cobra,
 	Sidewinder,
 	Viper,
+	Krait,
+	Freighter,
+	Cutter,
 	Missile,
 	Canister,
 	Asteroid,
 	Shard,
 	Station,
+}
+
+// NPC hull: a stat set plus the mesh it draws with. Kind (game.odin) is the AI role; ShipId is the hull.
+ShipId :: enum {
+	Cobra,
+	Sidewinder,
+	Hauler,
+	Viper,
+	Krait,
+	Freighter,
+	Cutter,
+}
+
+ShipDef :: struct {
+	model:     ModelId,
+	hp:        f32,
+	max_speed: f32,
+	turn:      f32,
+	fire_dmg:  f32,
+	bounty:    int, // tenths of a credit, paid when the player kills it as a pirate
+}
+
+ship_defs := [ShipId]ShipDef {
+	.Cobra      = {model = .Cobra, hp = 120, max_speed = 300, turn = 1.6, fire_dmg = 5, bounty = 2500},
+	.Sidewinder = {model = .Sidewinder, hp = 60, max_speed = 340, turn = 2.0, fire_dmg = 5, bounty = 1000},
+	.Hauler     = {model = .Cobra, hp = 90, max_speed = 220, turn = 0.9, fire_dmg = 4},
+	.Viper      = {model = .Viper, hp = 150, max_speed = 380, turn = 1.8, fire_dmg = 4},
+	.Krait      = {model = .Krait, hp = 45, max_speed = 400, turn = 2.4, fire_dmg = 4, bounty = 750},
+	.Freighter  = {model = .Freighter, hp = 200, max_speed = 160, turn = 0.6, fire_dmg = 4},
+	.Cutter     = {model = .Cutter, hp = 180, max_speed = 360, turn = 1.5, fire_dmg = 5},
 }
 
 Model :: struct {
@@ -86,8 +119,57 @@ viper_f := [?][4]u8{
 	{2, 3, 7, X}, {3, 5, 7, X}, {2, 4, 7, X}, {4, 5, 7, X},
 }
 
+// Krait: light dart fighter with swept wings. Convex, so outward normals work without flip bits.
 @(private = "file")
-missile_v := [?]Vec3{{0, 0, 30}, {-6, -6, -30}, {6, -6, -30}, {0, 8, -30}}
+krait_v := [?]Vec3{
+	{0, 0, 80}, {0, 10, -10}, {0, -8, -10}, {0, 0, -70}, {-60, -4, -30}, {60, -4, -30},
+}
+@(private = "file")
+krait_e := [?][2]u8{
+	{0, 1}, {0, 2}, {0, 4}, {0, 5}, {1, 4}, {1, 5}, {2, 4}, {2, 5}, {3, 1}, {3, 2}, {3, 4}, {3, 5},
+}
+@(private = "file")
+krait_f := [?][4]u8{
+	{0, 1, 4, X}, {0, 5, 1, X}, {0, 4, 2, X}, {0, 2, 5, X},
+	{3, 4, 1, X}, {3, 1, 5, X}, {3, 2, 4, X}, {3, 5, 2, X},
+}
+
+// Freighter: long tapered box with a blunt pyramid nose.
+@(private = "file")
+freighter_v := [?]Vec3{
+	{-30, -25, 70}, {30, -25, 70}, {30, 25, 70}, {-30, 25, 70},
+	{-45, -35, -110}, {45, -35, -110}, {45, 35, -110}, {-45, 35, -110}, {0, 0, 110},
+}
+@(private = "file")
+freighter_e := [?][2]u8{
+	{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4},
+	{0, 4}, {1, 5}, {2, 6}, {3, 7}, {8, 0}, {8, 1}, {8, 2}, {8, 3},
+}
+@(private = "file")
+freighter_f := [?][4]u8{
+	{4, 7, 6, 5}, {3, 2, 6, 7}, {0, 4, 5, 1}, {0, 3, 7, 4}, {1, 5, 6, 2},
+	{8, 1, 0, X}, {8, 2, 1, X}, {8, 3, 2, X}, {8, 0, 3, X},
+}
+
+// Cutter: stout diamond-section hull; the rear ring is a scaled copy of the mid ring so side quads stay planar.
+@(private = "file")
+cutter_v := [?]Vec3{
+	{0, 0, 110}, {-55, 0, 0}, {0, 25, 0}, {55, 0, 0}, {0, -20, 0},
+	{-38.5, 0, -90}, {0, 17.5, -90}, {38.5, 0, -90}, {0, -14, -90},
+}
+@(private = "file")
+cutter_e := [?][2]u8{
+	{0, 1}, {0, 2}, {0, 3}, {0, 4}, {1, 2}, {2, 3}, {3, 4}, {4, 1},
+	{1, 5}, {2, 6}, {3, 7}, {4, 8}, {5, 6}, {6, 7}, {7, 8}, {8, 5},
+}
+@(private = "file")
+cutter_f := [?][4]u8{
+	{0, 1, 2, X}, {0, 2, 3, X}, {0, 3, 4, X}, {0, 4, 1, X},
+	{1, 2, 6, 5}, {2, 3, 7, 6}, {3, 4, 8, 7}, {4, 1, 5, 8}, {5, 6, 7, 8},
+}
+
+@(private = "file")
+missile_v :=[?]Vec3{{0, 0, 30}, {-6, -6, -30}, {6, -6, -30}, {0, 8, -30}}
 @(private = "file")
 missile_e := [?][2]u8{{0, 1}, {0, 2}, {0, 3}, {1, 2}, {2, 3}, {3, 1}}
 @(private = "file")
@@ -169,7 +251,10 @@ init_models :: proc() {
 	set_model(.Cobra, cobra_v[:], cobra_e[:], cobra_f[:])
 	set_model(.Sidewinder, side_v[:], side_e[:], side_f[:])
 	set_model(.Viper, viper_v[:], viper_e[:], viper_f[:])
-	set_model(.Missile, missile_v[:], missile_e[:], missile_f[:])
+	set_model(.Krait, krait_v[:], krait_e[:], krait_f[:])
+	set_model(.Freighter, freighter_v[:], freighter_e[:], freighter_f[:])
+	set_model(.Cutter, cutter_v[:], cutter_e[:], cutter_f[:])
+	set_model(.Missile,missile_v[:], missile_e[:], missile_f[:])
 	set_model(.Canister, canister_v[:], canister_e[:], canister_f[:])
 	set_model(.Asteroid, rock_v[:], rock_e[:], rock_f[:])
 	set_model(.Shard, shard_v[:], shard_e[:])

@@ -31,7 +31,7 @@ galaxy.odin   market.odin    save.odin    audio.odin    math3d.odin    platform.
 | `game.odin` | `Game`, `Player`, `Entity` types; the global `g`; `new_game`, `launch`, `do_dock`, hyperspace jumps; flight update, combat (lasers, missiles, damage), enemy AI and spawning; top-level `update`. |
 | `ui.odin` | Docked-mode input and drawing: status, market (buy/sell), equipment, and the galactic chart (shared with flight via F3). |
 | `render.odin` | Projection, hidden-line wireframe model drawing, starfield, planet, HUD, font/text helpers, and `draw_flight/hyper/dead`. |
-| `ships.odin` | `ModelId` enum and the static mesh data (Cobra, Sidewinder, Viper, Missile, Canister, Asteroid, Shard, Station); `init_models` precomputes face normals and edge-to-face masks. |
+| `ships.odin` | `ShipId`/`ShipDef` table (NPC hull stats: hp, speed, turn, fire damage, bounty; add a ship by adding a row) plus the `ModelId` enum and the static mesh data (Cobra, Sidewinder, Viper, Krait, Freighter, Cutter, Missile, Canister, Asteroid, Shard, Station); `init_models` precomputes face normals and edge-to-face masks. |
 | `galaxy.odin` | Deterministic procedural galaxy: 3×16-bit "twist" seed → 8 galaxies × 256 systems (`System`: position, government, economy, tech, name). |
 | `market.odin` | 17 commodities, `make_market` (price and quantity from system economy plus a hash-based fluctuation), money/cargo helpers, `rank_name`. |
 | `save.odin` | `SaveData` ↔ JSON, atomic write, validating load. |

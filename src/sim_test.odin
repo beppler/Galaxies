@@ -213,3 +213,27 @@ horizon_cut_keeps_facing_part :: proc(t: ^testing.T) {
 	testing.expect(t, abs(linalg.dot(b, c) + r * r) < 1)
 	testing.expect(t, abs(linalg.length(b) - r) < 0.01)
 }
+
+@(test)
+spawn_ship_uses_def :: proc(t: ^testing.T) {
+	init_models()
+	new_game()
+	defer free_game()
+	for id in ShipId {
+		d := ship_defs[id]
+		testing.expect(t, d.hp > 0 && d.max_speed > 0 && d.turn > 0 && d.fire_dmg > 0)
+		clear(&g.ents)
+		clear(&g.pending)
+		spawn_ship(id, .Pirate, {}, basis_identity(), 100)
+		flush_pending()
+		e := g.ents[0]
+		testing.expect_value(t, e.model, d.model)
+		testing.expect_value(t, e.max_hp, d.hp)
+	}
+	// every hull spawn_enemy can give a pirate must pay a bounty
+	clear(&g.pending)
+	for _ in 0 ..< 300 { spawn_enemy() }
+	for e in g.pending {
+		if e.kind == .Pirate { testing.expect(t, ship_defs[e.ship].bounty > 0) }
+	}
+}
