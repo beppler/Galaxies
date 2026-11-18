@@ -33,7 +33,8 @@ main :: proc() {
 	}
 
 	for !rl.WindowShouldClose() {
-		if rl.IsKeyPressed(.F11) {
+		// macOS reserves F11 for Show Desktop, so Alt/Cmd+Enter toggles fullscreen too
+		if rl.IsKeyPressed(.F11) || (rl.IsKeyPressed(.ENTER) && (rl.IsKeyDown(.LEFT_ALT) || rl.IsKeyDown(.LEFT_SUPER))) {
 			rl.ToggleBorderlessWindowed()
 		}
 		if !has_env && rl.IsWindowResized() { // window may have moved to a monitor with another DPI
