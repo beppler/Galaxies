@@ -83,11 +83,13 @@ load_game :: proc() -> bool {
 	g.cur = d.system
 	g.target = clamp(d.target, 0, 255)
 	g.cursor = g.target
-	g.p.cash = d.cash
+	g.p.cash = max(d.cash, 0)
 	g.p.fuel = clamp(d.fuel, 0, MAX_FUEL)
-	g.p.missiles = d.missiles
-	g.p.cargo = d.cargo
-	g.p.cargo_cap = d.cargo_cap
+	g.p.missiles = clamp(d.missiles, 0, 4)
+	for c, i in d.cargo {
+		g.p.cargo[i] = max(c, 0)
+	}
+	g.p.cargo_cap = 45 if d.cargo_cap > 20 else 20
 	g.p.kills = d.kills
 	g.p.gal_drive = d.gal_drive
 	setup_system()
