@@ -296,7 +296,10 @@ draw_docked :: proc() {
 		text("Launch (F5) and dock again with the slot: line up nose-in, match roll, slow below 220.", 40, view.h - 40, 14, COL_DIM)
 	case .Market:
 		text(fmt.ctprintf("%s MARKET", sys_name(s)), 40, y, 28, COL_GREEN)
-		text("Item                Price     Stock   Hold", 40, y + 44, 16, COL_DIM)
+		text("Item", 40, y + 44, 16, COL_DIM)
+			text("Price", 230, y + 44, 16, COL_DIM)
+			text("Stock", 330, y + 44, 16, COL_DIM)
+			text("Hold", 450, y + 44, 16, COL_DIM)
 		for c, i in COMMODITIES {
 			col := COL_CYAN
 			if i == g.sel {
