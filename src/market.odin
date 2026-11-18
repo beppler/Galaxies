@@ -1,5 +1,7 @@
 package main
 
+import "core:fmt"
+
 NUM_COMM :: 17
 
 Commodity :: struct {
@@ -60,6 +62,11 @@ make_market :: proc(sys: ^System, seed: u32) -> (m: Market) {
 		m.price[i] = p * 4
 	}
 	return
+}
+
+// Money is stored in tenths of a credit.
+cr :: proc(tenths: int) -> string {
+	return fmt.tprintf("%d.%d cr", tenths / 10, tenths % 10)
 }
 
 cargo_used :: proc(cargo: [NUM_COMM]int) -> (n: int) {

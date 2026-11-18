@@ -17,20 +17,28 @@ SaveData :: struct {
 	kills:     int,
 	gal_drive: bool,
 	epoch:     u32,
+	fugitive:  bool,
 }
+
+// Tests set this to a temp dir; with it unset they must never touch a player's real save.
+save_dir: string
 
 @(private = "file")
 save_path :: proc() -> (path: string, ok: bool) {
-	when ODIN_TEST { // tests call launch()/do_dock(); they must never touch a player's real save
-		return "", false
-	}
-	dir, err := os.user_config_dir(context.temp_allocator)
-	if err != nil {
-		return "", false
-	}
-	folder, jerr := filepath.join({dir, "Galaxies"}, context.temp_allocator)
-	if jerr != nil {
-		return "", false
+	folder := save_dir
+	if folder == "" {
+		when ODIN_TEST { // tests call launch()/do_dock()
+			return "", false
+		}
+		dir, err := os.user_config_dir(context.temp_allocator)
+		if err != nil {
+			return "", false
+		}
+		joined, jerr := filepath.join({dir, "Galaxies"}, context.temp_allocator)
+		if jerr != nil {
+			return "", false
+		}
+		folder = joined
 	}
 	os.make_directory_all(folder)
 	full, jerr2 := filepath.join({folder, "save.json"}, context.temp_allocator)
@@ -56,6 +64,7 @@ save_game :: proc() -> bool {
 		kills     = g.p.kills,
 		gal_drive = g.p.gal_drive,
 		epoch     = g.epoch,
+		fugitive  = g.p.fugitive,
 	}
 	data, err := json.marshal(d, {pretty = true}, context.temp_allocator)
 	if err != nil {
@@ -119,6 +128,7 @@ apply_save :: proc(d: SaveData) -> bool {
 	g.epoch = max(d.epoch, 1)
 	g.p.kills = d.kills
 	g.p.gal_drive = d.gal_drive
+	g.p.fugitive = d.fugitive
 	setup_system()
 	return true
 }
