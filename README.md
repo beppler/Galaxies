@@ -56,7 +56,7 @@ Saves go to the user config dir (`Galaxies/save.json`) on dock/launch.
 
 ## Ideas / not yet done
 
-Missions, more ship types, gamepad support.
+Missions, player-flyable ships, gamepad support.
 
 ## License
 
