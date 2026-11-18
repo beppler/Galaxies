@@ -101,7 +101,6 @@ Game :: struct {
 	msg_len:    int,
 	msg_t:      f32,
 	sel:        int,
-	chart_open: bool,
 	stars:      [256]Vec3,
 	time:       f32,
 }
@@ -213,7 +212,7 @@ launch :: proc() {
 	p.prev = p.pos
 	p.laser_cd, p.missile_cd, p.temp = 0, 0, 0
 	g.state = .Flight
-	g.chart_open = false
+	g.screen = .Status
 	g.spawn_t = 8 + rnd() * 8
 	populate_space()
 	save_game()
@@ -617,10 +616,10 @@ read_controls :: proc(dt: f32) {
 flight_update :: proc(dt: f32) {
 	p := &g.p
 	if rl.IsKeyPressed(.F3) {
-		g.chart_open = !g.chart_open
+		g.screen = .Status if g.screen == .Chart else .Chart
 		g.cursor = g.target
 	}
-	if g.chart_open {
+	if g.screen == .Chart {
 		chart_input()
 		return
 	}

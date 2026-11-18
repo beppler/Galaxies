@@ -246,7 +246,7 @@ draw_hud :: proc() {
 }
 
 draw_flight :: proc() {
-	if g.chart_open {
+	if g.screen == .Chart {
 		draw_chart()
 	} else {
 		draw_world()
