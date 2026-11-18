@@ -73,6 +73,12 @@ Player :: struct {
 	laser_cd, missile_cd: f32,
 }
 
+Planet :: struct {
+	pos:                  Vec3,
+	r:                    f32,
+	parallels, meridians: int,
+}
+
 Game :: struct {
 	state:      State,
 	screen:     Screen,
@@ -85,6 +91,8 @@ Game :: struct {
 	epoch:      u32,
 	p:          Player,
 	station:    Entity,
+	planet:     Planet,
+	compass_planet: bool, // compass points at the planet instead of the station
 	ents:       [dynamic]Entity,
 	pending:    [dynamic]Entity,
 	next_id:    int,
@@ -161,7 +169,16 @@ setup_system :: proc() {
 	g.market = make_market(cur_sys(), u32(g.cur) * 977 + u32(g.galaxy_no) * 31337 + g.epoch * 7919)
 }
 
+// Planet sits below the station (at the origin); size and line pattern come from the system.
+make_planet :: proc(s: ^System) -> Planet {
+	r := 6000 + f32((s.x * 7 + s.y * 13) % 8) * 500
+	ang := f32(s.x) / 256 * 2 * math.PI
+	dir := linalg.normalize(Vec3{math.cos(ang), -0.5, math.sin(ang) + 1})
+	return Planet{pos = dir * (r + 5000), r = r, parallels = 2 + s.eco & 3, meridians = (s.tech & 3) * 2}
+}
+
 clear_world :: proc() {
+	g.planet = make_planet(cur_sys())
 	clear(&g.ents)
 	clear(&g.pending)
 	g.station = Entity {
@@ -232,6 +249,9 @@ arrive_by_jump :: proc() {
 	p := &g.p
 	p.fugitive = false
 	dir := random_unit(rnd)
+	if linalg.length(dir * 9000 - g.planet.pos) < g.planet.r * 1.1 {
+		dir = -dir // never arrive inside the planet
+	}
 	p.pos = dir * 9000
 	p.prev = p.pos
 	p.b = basis_identity()
@@ -631,6 +651,9 @@ flight_update :: proc(dt: f32) {
 	}
 
 	read_controls(dt)
+	if rl.IsKeyPressed(.T) {
+		g.compass_planet = !g.compass_planet
+	}
 
 	p.laser_cd -= dt
 	p.missile_cd -= dt
@@ -670,6 +693,10 @@ flight_update :: proc(dt: f32) {
 	if can_dock {
 		do_dock()
 		return
+	}
+	if linalg.length(p.pos - g.planet.pos) < g.planet.r {
+		damage_player(1e6)
+		message("Crashed into the planet")
 	}
 	if inside {
 		damage_player(25 + p.speed * 0.08)

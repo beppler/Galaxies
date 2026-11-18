@@ -13,6 +13,7 @@ COL_CYAN :: rl.Color{80, 220, 255, 255}
 COL_AMBER :: rl.Color{255, 190, 60, 255}
 COL_RED :: rl.Color{255, 70, 70, 255}
 COL_DIM :: rl.Color{120, 170, 145, 255}
+COL_PLANET :: rl.Color{190, 140, 255, 255}
 
 View :: struct {
 	w, h:  f32, // full window
@@ -149,8 +150,75 @@ draw_stars :: proc() {
 	}
 }
 
+// Cut a sphere-surface segment (qa, qb: camera-space offsets from the centre c, radius r) to its
+// camera-facing part. ok is false when none of it faces the camera.
+horizon_cut :: proc(c, qa, qb: Vec3, r: f32) -> (a, b: Vec3, ok: bool) {
+	a, b = qa, qb
+	fa, fb := linalg.dot(qa, c) + r * r, linalg.dot(qb, c) + r * r // < 0: faces the camera
+	if fa >= 0 && fb >= 0 { return }
+	if fa >= 0 || fb >= 0 {
+		// bisect on the sphere (a straight-line interpolation drifts off the horizon)
+		on_sphere :: proc(qa, qb: Vec3, t, r: f32) -> Vec3 {
+			return linalg.normalize(qa + (qb - qa) * t) * r
+		}
+		lo, hi: f32 = 0, 1 // lo stays on a's side of the horizon
+		for _ in 0 ..< 20 {
+			m := (lo + hi) / 2
+			if (linalg.dot(on_sphere(qa, qb, m, r), c) + r * r >= 0) == (fa >= 0) { lo = m } else { hi = m }
+		}
+		cut := on_sphere(qa, qb, (lo + hi) / 2, r)
+		if fa >= 0 { a = cut } else { b = cut }
+	}
+	return a, b, true
+}
+
+// Draw the camera-facing part of a polyline of sphere points.
+planet_arc :: proc(c: Vec3, pts: []Vec3, r: f32) {
+	for k in 0 ..< len(pts) - 1 {
+		if a, b, ok := horizon_cut(c, pts[k], pts[k + 1], r); ok {
+			draw_line3(c + a, c + b, COL_PLANET)
+		}
+	}
+}
+
+draw_planet :: proc() {
+	pl := &g.planet
+	c := to_local(g.p.b, pl.pos - g.p.pos)
+	d := linalg.length(c)
+	if d <= pl.r { return }
+	N :: 32
+	// outline: the horizon circle, drawn in 3D so perspective makes it the right ellipse off-axis
+	n := c / d
+	ax := linalg.normalize(linalg.cross(n, Vec3{0, 1, 0} if abs(n.y) < 0.9 else Vec3{1, 0, 0}))
+	ay := linalg.cross(n, ax)
+	hc, hr := c * (1 - pl.r * pl.r / (d * d)), pl.r * math.sqrt(1 - pl.r * pl.r / (d * d))
+	for k in 0 ..< N * 2 {
+		a0, a1 := 2 * math.PI * f32(k) / (N * 2), 2 * math.PI * f32(k + 1) / (N * 2)
+		draw_line3(
+			hc + hr * (math.cos(a0) * ax + math.sin(a0) * ay),
+			hc + hr * (math.cos(a1) * ax + math.sin(a1) * ay),
+			COL_PLANET,
+		)
+	}
+	pt :: proc(lat, lon: f32) -> Vec3 {
+		return to_local(g.p.b, g.planet.r * Vec3{math.cos(lat) * math.cos(lon), math.sin(lat), math.cos(lat) * math.sin(lon)})
+	}
+	ring: [N + 1]Vec3
+	for i in 1 ..= pl.parallels {
+		lat := -math.PI / 2 + math.PI * f32(i) / f32(pl.parallels + 1)
+		for k in 0 ..= N { ring[k] = pt(lat, 2 * math.PI * f32(k) / N) }
+		planet_arc(c, ring[:], pl.r)
+	}
+	for j in 0 ..< pl.meridians {
+		lon := 2 * math.PI * f32(j) / f32(pl.meridians)
+		for k in 0 ..= N / 2 { ring[k] = pt(-math.PI / 2 + math.PI * f32(k) / (N / 2), lon) }
+		planet_arc(c, ring[:N / 2 + 1], pl.r)
+	}
+}
+
 draw_world :: proc() {
 	draw_stars()
+	draw_planet()
 	draw_model(.Station, g.station.pos, g.station.b, COL_CYAN)
 	for &e in g.ents {
 		if e.alive {
@@ -243,29 +311,34 @@ draw_hud :: proc() {
 		rl.DrawRectangle(i32(sx) - 2, i32(sy - h) - 2, 4, 4, col)
 	}
 	scan_dot(g.station.pos, COL_CYAN, scx, scy, rx, ry)
+	scan_dot(g.planet.pos, COL_PLANET, scx, scy, rx, ry)
 	for &e in g.ents {
 		if e.alive && (e.kind == .Pirate || e.kind == .Trader || e.kind == .Police || e.kind == .Missile) {
 			scan_dot(e.pos, kind_color(&e), scx, scy, rx, ry)
 		}
 	}
 
-	// compass (station direction)
+	// compass (station or planet direction, T toggles)
+	tgt, tgt_name, tgt_col, tgt_off := g.station.pos, cstring("STATION"), COL_CYAN, f32(0)
+	if g.compass_planet {
+		tgt, tgt_name, tgt_col, tgt_off = g.planet.pos, "PLANET", COL_PLANET, g.planet.r
+	}
 	ccx := scx + rx + 60
 	ccy := scy
 	rl.DrawCircleLines(i32(ccx), i32(ccy), 34, COL_DIM)
-	dir := to_local(p.b, g.station.pos - p.pos)
+	dir := to_local(p.b, tgt - p.pos)
 	dl := linalg.length(dir)
 	if dl > 1 {
 		n := dir / dl
 		pt := rl.Vector2{ccx + n.x * 30, ccy - n.y * 30}
 		if n.z > 0 {
-			rl.DrawCircleV(pt, 4, COL_CYAN)
+			rl.DrawCircleV(pt, 4, tgt_col)
 		} else {
-			rl.DrawCircleLinesV(pt, 4, COL_CYAN)
+			rl.DrawCircleLinesV(pt, 4, tgt_col)
 		}
 	}
-	text("STATION", ccx - 26, ccy + 38, 12, COL_DIM)
-	text(fmt.ctprintf("%.1fkm", dl / 1000), ccx - 20, ccy + 52, 12, COL_CYAN)
+	text(tgt_name, ccx - 26, ccy + 38, 12, COL_DIM)
+	text(fmt.ctprintf("%.1fkm", max(dl - tgt_off, 0) / 1000), ccx - 20, ccy + 52, 12, tgt_col)
 
 	// right: info
 	rxp := view.w - 230
@@ -287,7 +360,7 @@ draw_hud :: proc() {
 	}
 
 	// docking hint
-	if dl < 3500 {
+	if linalg.length(g.station.pos - p.pos) < 3500 {
 		can, _ := dock_check()
 		if can {
 			text_c("DOCKING", view.cx, 20, 20, COL_GREEN)

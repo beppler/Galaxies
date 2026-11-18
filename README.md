@@ -13,7 +13,7 @@ packages (`libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev lib
     ./build.sh        # or build.bat on Windows;  ./build.sh run | test
 
 ## Controls
-Flight: arrows roll/pitch, Q/E yaw, W/S speed, SPACE laser, M missile, H hyperspace to the
+Flight: arrows roll/pitch, Q/E yaw, W/S speed, SPACE laser, M missile, T compass station/planet, H hyperspace to the
 selected system, G galactic hyperdrive, F3 galactic chart (ENTER sets destination), F11 fullscreen.
 Docking: fly nose-first into the rotating station slot, match its roll, speed < 220.
 Docked: F1 status, F2 market (B/S buy/sell, Shift = x10), F3 chart, F4 equipment, F5/L launch, F9 save.
@@ -21,7 +21,7 @@ Docked: F1 status, F2 market (B/S buy/sell, Shift = x10), F3 chart, F4 equipment
 Saves go to the user config dir (`Galaxies/save.json`) on dock/launch.
 
 ## Ideas / not yet done
-Planets, missions, more ship types, gamepad support.
+Missions, more ship types, gamepad support.
 
 ## License
 The code is released under the [MIT License](LICENSE); this does not extend to any rights in

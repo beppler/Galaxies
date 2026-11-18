@@ -164,3 +164,41 @@ station_slot_hidden_from_behind :: proc(t: ^testing.T) {
 	testing.expect(t, !rim_drawn(m, {0, 0, -1000}))
 	testing.expect(t, !rim_drawn(m, {0, 800, 0}))
 }
+
+@(test)
+planets_clear_launch_and_crash_kills :: proc(t: ^testing.T) {
+	init_models()
+	new_game()
+	defer free_game()
+	for s in g.galaxy {
+		s := s
+		pl := make_planet(&s)
+		testing.expect(t, pl.r > 0)
+		testing.expect(t, linalg.length(Vec3{0, 0, ST_L + 250} - pl.pos) > pl.r)
+	}
+	for _ in 0 ..< 50 { // hyperspace arrival must never land inside the planet
+		arrive_by_jump()
+		testing.expect(t, linalg.length(g.p.pos - g.planet.pos) > g.planet.r)
+	}
+	launch()
+	g.p.pos = g.planet.pos
+	flight_update(1.0 / 60)
+	testing.expect_value(t, g.state, State.Dead)
+}
+
+@(test)
+horizon_cut_keeps_facing_part :: proc(t: ^testing.T) {
+	r: f32 = 100
+	c := Vec3{0, 0, 300} // camera at the origin, sphere centre straight ahead
+	// both points on the far side (+z beyond the centre): hidden
+	_, _, ok := horizon_cut(c, {-30, 0, 95}, {30, 0, 95}, r)
+	testing.expect(t, !ok)
+	// near side to far side: cut where it crosses the horizon
+	qa := Vec3{0, 0, -100}
+	qb := linalg.normalize(Vec3{70, 0, 70}) * r
+	a, b, ok2 := horizon_cut(c, qa, qb, r)
+	testing.expect(t, ok2)
+	testing.expect(t, a == qa)
+	testing.expect(t, abs(linalg.dot(b, c) + r * r) < 1)
+	testing.expect(t, abs(linalg.length(b) - r) < 0.01)
+}
