@@ -70,6 +70,7 @@ Player :: struct {
 	fugitive:             bool,
 	gal_drive:            bool,
 	laser_cd, missile_cd: f32,
+	turn_vel:             [3]f32, // smoothed roll/pitch/yaw input (-1..1)
 }
 
 Planet :: struct {
@@ -231,6 +232,7 @@ launch :: proc() {
 	p.b = basis_identity()
 	p.pos = {0, 0, ST_L + 250}
 	p.speed = 120
+	p.turn_vel = {}
 	p.prev = p.pos
 	p.laser_cd, p.missile_cd, p.temp = 0, 0, 0
 	g.state = .Flight
@@ -261,6 +263,7 @@ arrive_by_jump :: proc() {
 	}
 	orthonormalize(&p.b)
 	p.speed = 150
+	p.turn_vel = {}
 	g.state = .Flight
 	g.spawn_t = 6 + rnd() * 6
 	populate_space()
@@ -271,6 +274,7 @@ do_dock :: proc() {
 	g.state = .Docked
 	g.screen = .Status
 	g.p.speed = 0
+	g.p.turn_vel = {}
 	g.p.shield = 100
 	g.p.hull = 100
 	clear(&g.ents)
@@ -619,6 +623,11 @@ dock_check :: proc() -> (can_dock: bool, inside_hull: bool) {
 
 // ---------------------------------------------------------------- per-frame
 
+// Move vel toward target; frame-rate independent, ~0.12s to settle.
+ease_turn :: proc(vel, target: [3]f32, dt: f32) -> [3]f32 {
+	return vel + (target - vel) * (1 - math.exp(-8 * dt))
+}
+
 // Steering and throttle keys.
 read_controls :: proc(dt: f32) {
 	p := &g.p
@@ -629,9 +638,10 @@ read_controls :: proc(dt: f32) {
 	if key_down(.DOWN) { pi_ += 1 }
 	if key_down(.A) { yi -= 1 }
 	if key_down(.D) { yi += 1 }
-	roll(&p.b, ri * 1.8 * dt)
-	pitch(&p.b, pi_ * 1.2 * dt)
-	yaw(&p.b, yi * 0.8 * dt)
+	p.turn_vel = ease_turn(p.turn_vel, {ri, pi_, yi}, dt)
+	roll(&p.b, p.turn_vel[0] * 1.8 * dt)
+	pitch(&p.b, p.turn_vel[1] * 1.2 * dt)
+	yaw(&p.b, p.turn_vel[2] * 0.8 * dt)
 	orthonormalize(&p.b)
 	if key_down(.W) { p.speed += 260 * dt }
 	if key_down(.S) { p.speed -= 260 * dt }
@@ -646,6 +656,7 @@ flight_update :: proc(dt: f32) {
 	}
 	if g.screen == .Chart {
 		chart_input()
+		p.turn_vel = {} // no residual turn when returning to the cockpit
 		return
 	}
 
