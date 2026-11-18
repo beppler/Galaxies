@@ -9,6 +9,8 @@ main :: proc() {
 	rl.SetWindowMinSize(800, 600)
 	rl.SetTargetFPS(60)
 
+	init_font()
+	defer rl.UnloadFont(font)
 	init_models()
 	init_audio()
 	defer shutdown_audio()

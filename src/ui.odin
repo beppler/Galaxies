@@ -125,7 +125,7 @@ draw_chart :: proc() {
 		fmt.ctprintf("%s  |  %s  |  Tech %d  |  Pop %.1fbn", GOV_NAMES[c.gov], ECO_NAMES[c.eco], c.tech + 1, f32(c.pop) / 10),
 		x, iy + 30, 16, COL_CYAN,
 	)
-	text("Arrows/mouse: select   ENTER: set destination", x, iy + 56, 14, COL_DIM)
+	text("Arrows/mouse: select   ENTER: set destination", x, iy + 56, 16, COL_DIM)
 }
 
 // ---------------------------------------------------------------- docked
@@ -293,7 +293,7 @@ draw_docked :: proc() {
 				k += 1
 			}
 		}
-		text("Launch (F5) and dock again with the slot: line up nose-in, match roll, slow below 220.", 40, view.h - 40, 14, COL_DIM)
+		text("Launch (F5) and dock again with the slot: line up nose-in, match roll, slow below 220.", 40, view.h - 40, 16, COL_DIM)
 	case .Market:
 		text(fmt.ctprintf("%s MARKET", sys_name(s)), 40, y, 28, COL_GREEN)
 		text("Item", 40, y + 44, 16, COL_DIM)
@@ -317,7 +317,7 @@ draw_docked :: proc() {
 			fmt.ctprintf("Cash %d.%d cr    Hold %d/%dt", g.p.cash / 10, g.p.cash % 10, cargo_used(g.p.cargo), g.p.cargo_cap),
 			40, y + 68 + 17 * 24 + 8, 18, COL_AMBER,
 		)
-		text("UP/DOWN select   B/Right buy   S/Left sell   (Shift = x10)", 40, view.h - 40, 14, COL_DIM)
+		text("UP/DOWN select   B/Right buy   S/Left sell   (Shift = x10)", 40, view.h - 40, 16, COL_DIM)
 	case .Chart:
 		draw_chart()
 	case .Equip:
@@ -333,7 +333,7 @@ draw_docked :: proc() {
 			text(fmt.ctprintf("%s    %s", n, price), 40, y + 60 + f32(i) * 34, 22, col)
 		}
 		text(fmt.ctprintf("Cash %d.%d cr", g.p.cash / 10, g.p.cash % 10), 40, y + 220, 20, COL_AMBER)
-		text("UP/DOWN select   ENTER buy", 40, view.h - 40, 14, COL_DIM)
+		text("UP/DOWN select   ENTER buy", 40, view.h - 40, 16, COL_DIM)
 	}
 	if g.msg_t > 0 {
 		text_c(fmt.ctprintf("%s", msg_text()), view.cx, view.h - 70, 20, COL_AMBER)

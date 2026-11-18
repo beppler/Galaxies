@@ -12,7 +12,7 @@ COL_GREEN :: rl.Color{80, 255, 120, 255}
 COL_CYAN :: rl.Color{80, 220, 255, 255}
 COL_AMBER :: rl.Color{255, 190, 60, 255}
 COL_RED :: rl.Color{255, 70, 70, 255}
-COL_DIM :: rl.Color{70, 110, 90, 255}
+COL_DIM :: rl.Color{120, 170, 145, 255}
 
 View :: struct {
 	w, h:  f32, // full window
@@ -146,13 +146,22 @@ draw_world :: proc() {
 	rl.DrawLineV({cx, cy + 5}, {cx, cy + 14}, COL_GREEN)
 }
 
+font: rl.Font
+FONT_DATA :: #load("../assets/JetBrainsMono-Regular.ttf")
+
+init_font :: proc() {
+	font = rl.LoadFontFromMemory(".ttf", raw_data(FONT_DATA), i32(len(FONT_DATA)), 48, nil, 0)
+	rl.SetTextureFilter(font.texture, .BILINEAR)
+}
+
 text :: proc(s: cstring, x, y: f32, size: i32, col: rl.Color) {
-	rl.DrawText(s, i32(x), i32(y), size, col)
+	rl.DrawTextEx(font, s, {x, y}, f32(max(size, 14)), 0, col)
 }
 
 text_c :: proc(s: cstring, cx, y: f32, size: i32, col: rl.Color) {
-	w := rl.MeasureText(s, size)
-	rl.DrawText(s, i32(cx) - w / 2, i32(y), size, col)
+	sz := max(size, 14)
+	w := rl.MeasureTextEx(font, s, f32(sz), 0).x
+	rl.DrawTextEx(font, s, {cx - w / 2, y}, f32(sz), 0, col)
 }
 
 bar :: proc(label: cstring, x, y, w: f32, v, vmax: f32, col: rl.Color) {
@@ -229,10 +238,10 @@ draw_hud :: proc() {
 	// right: info
 	rxp := view.w - 230
 	text(fmt.ctprintf("%s", sys_name(cur_sys())), rxp, top + 14, 18, COL_GREEN)
-	text(fmt.ctprintf("Cash  %d.%d cr", p.cash / 10, p.cash % 10), rxp, top + 40, 14, COL_AMBER)
-	text(fmt.ctprintf("Rank  %s", rank_name(p.kills)), rxp, top + 60, 14, COL_GREEN)
-	text(fmt.ctprintf("Kills %d", p.kills), rxp, top + 80, 14, COL_GREEN)
-	text(fmt.ctprintf("Cargo %d/%dt", cargo_used(p.cargo), p.cargo_cap), rxp, top + 100, 14, COL_GREEN)
+	text(fmt.ctprintf("Cash  %d.%d cr", p.cash / 10, p.cash % 10), rxp, top + 40, 16, COL_AMBER)
+	text(fmt.ctprintf("Rank  %s", rank_name(p.kills)), rxp, top + 60, 16, COL_GREEN)
+	text(fmt.ctprintf("Kills %d", p.kills), rxp, top + 80, 16, COL_GREEN)
+	text(fmt.ctprintf("Cargo %d/%dt", cargo_used(p.cargo), p.cargo_cap), rxp, top + 100, 16, COL_GREEN)
 	if p.fugitive {
 		text("FUGITIVE", rxp, top + 122, 16, COL_RED)
 	} else {
