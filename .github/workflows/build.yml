@@ -14,10 +14,10 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libasound2-dev
       - name: Test
-        run: mise exec -- odin test src -out:bin/elite_test -define:ODIN_TEST_THREADS=1
+        run: mise exec -- odin test src -out:bin/galaxies_test -define:ODIN_TEST_THREADS=1
       - name: Build
-        run: mise exec -- odin build src -out:bin/elite -o:speed
+        run: mise exec -- odin build src -out:bin/galaxies -o:speed
       - uses: actions/upload-artifact@v4
         with:
-          name: elite-${{ runner.os }}
-          path: bin/elite*
+          name: galaxies-${{ runner.os }}
+          path: bin/galaxies*

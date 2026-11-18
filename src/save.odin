@@ -25,7 +25,7 @@ save_path :: proc() -> (path: string, ok: bool) {
 	if err != nil {
 		return "", false
 	}
-	folder, jerr := filepath.join({dir, "Elite"}, context.temp_allocator)
+	folder, jerr := filepath.join({dir, "Galaxies"}, context.temp_allocator)
 	if jerr != nil {
 		return "", false
 	}

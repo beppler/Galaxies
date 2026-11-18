@@ -4,7 +4,7 @@ import rl "vendor:raylib"
 
 main :: proc() {
 	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT, .MSAA_4X_HINT})
-	rl.InitWindow(1024, 768, "ELITE")
+	rl.InitWindow(1024, 768, "Galaxies")
 	defer rl.CloseWindow()
 	rl.SetWindowMinSize(800, 600)
 	rl.SetTargetFPS(60)
