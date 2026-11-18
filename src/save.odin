@@ -16,6 +16,7 @@ SaveData :: struct {
 	cargo_cap: int,
 	kills:     int,
 	gal_drive: bool,
+	epoch:     u32,
 }
 
 @(private = "file")
@@ -49,6 +50,7 @@ save_game :: proc() {
 		cargo_cap = g.p.cargo_cap,
 		kills     = g.p.kills,
 		gal_drive = g.p.gal_drive,
+		epoch     = g.epoch,
 	}
 	data, err := json.marshal(d, {pretty = true}, context.temp_allocator)
 	if err != nil {
@@ -90,6 +92,7 @@ load_game :: proc() -> bool {
 		g.p.cargo[i] = max(c, 0)
 	}
 	g.p.cargo_cap = 45 if d.cargo_cap > 20 else 20
+	g.epoch = max(d.epoch, 1)
 	g.p.kills = d.kills
 	g.p.gal_drive = d.gal_drive
 	setup_system()
