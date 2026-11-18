@@ -27,7 +27,7 @@ chart_input :: proc() {
 		d:   [2]f32,
 	}{{.LEFT, {-1, 0}}, {.RIGHT, {1, 0}}, {.UP, {0, -1}}, {.DOWN, {0, 1}}}
 	for dd in dirs {
-		if !rl.IsKeyPressed(dd.key) {
+		if !key_pressed(dd.key) {
 			continue
 		}
 		best := -1
@@ -54,9 +54,9 @@ chart_input :: proc() {
 			g.cursor = best
 		}
 	}
-	if rl.IsMouseButtonPressed(.LEFT) {
+	if mouse_pressed(.LEFT) {
 		x, y, w, h := chart_rect()
-		m := rl.GetMousePosition()
+		m := mouse_pos()
 		bs: f32 = 400
 		for &s, i in g.galaxy {
 			sx := x + f32(s.x) / 256 * w
@@ -67,7 +67,7 @@ chart_input :: proc() {
 			}
 		}
 	}
-	if rl.IsKeyPressed(.ENTER) {
+	if key_pressed(.ENTER) {
 		g.target = g.cursor
 		if g.target == g.cur {
 			message("Destination cleared")
@@ -131,15 +131,15 @@ draw_chart :: proc() {
 // ---------------------------------------------------------------- docked
 
 docked_update :: proc() {
-	if rl.IsKeyPressed(.F1) { g.screen = .Status }
-	if rl.IsKeyPressed(.F2) { g.screen = .Market; g.sel = 0 }
-	if rl.IsKeyPressed(.F3) { g.screen = .Chart; g.cursor = g.target }
-	if rl.IsKeyPressed(.F4) { g.screen = .Equip; g.sel = 0 }
-	if rl.IsKeyPressed(.F5) || rl.IsKeyPressed(.L) {
+	if key_pressed(.F1) { g.screen = .Status }
+	if key_pressed(.F2) { g.screen = .Market; g.sel = 0 }
+	if key_pressed(.F3) { g.screen = .Chart; g.cursor = g.target }
+	if key_pressed(.F4) { g.screen = .Equip; g.sel = 0 }
+	if key_pressed(.F5) || key_pressed(.L) {
 		launch()
 		return
 	}
-	if rl.IsKeyPressed(.F9) {
+	if key_pressed(.F9) {
 		save_game()
 		message("Game saved")
 	}
@@ -155,13 +155,13 @@ docked_update :: proc() {
 }
 
 market_input :: proc() {
-	if rl.IsKeyPressed(.DOWN) { g.sel = (g.sel + 1) % NUM_COMM }
-	if rl.IsKeyPressed(.UP) { g.sel = (g.sel + NUM_COMM - 1) % NUM_COMM }
-	n := 10 if (rl.IsKeyDown(.LEFT_SHIFT) || rl.IsKeyDown(.RIGHT_SHIFT)) else 1
-	if rl.IsKeyPressed(.B) || rl.IsKeyPressed(.RIGHT) {
+	if key_pressed(.DOWN) { g.sel = (g.sel + 1) % NUM_COMM }
+	if key_pressed(.UP) { g.sel = (g.sel + NUM_COMM - 1) % NUM_COMM }
+	n := 10 if (key_down(.LEFT_SHIFT) || key_down(.RIGHT_SHIFT)) else 1
+	if key_pressed(.B) || key_pressed(.RIGHT) {
 		buy(g.sel, n)
 	}
-	if rl.IsKeyPressed(.S) || rl.IsKeyPressed(.LEFT) {
+	if key_pressed(.S) || key_pressed(.LEFT) {
 		sell(g.sel, n)
 	}
 }
@@ -201,9 +201,9 @@ sell :: proc(i, n: int) {
 }
 
 equip_input :: proc() {
-	if rl.IsKeyPressed(.DOWN) { g.sel = (g.sel + 1) % 4 }
-	if rl.IsKeyPressed(.UP) { g.sel = (g.sel + 3) % 4 }
-	if rl.IsKeyPressed(.ENTER) {
+	if key_pressed(.DOWN) { g.sel = (g.sel + 1) % 4 }
+	if key_pressed(.UP) { g.sel = (g.sel + 3) % 4 }
+	if key_pressed(.ENTER) {
 		buy_equip(g.sel)
 	}
 }

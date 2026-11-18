@@ -67,7 +67,9 @@ shutdown_audio :: proc() {
 }
 
 play :: proc(id: SoundId) {
-	if audio_ok {
-		rl.PlaySound(sounds[id])
+	when !ODIN_TEST { // see platform.odin
+		if audio_ok {
+			rl.PlaySound(sounds[id])
+		}
 	}
 }
