@@ -59,3 +59,13 @@ jump_changes_system :: proc(t: ^testing.T) {
 	testing.expect(t, g.cur != old)
 	testing.expect_value(t, g.state, State.Flight)
 }
+
+@(test)
+dock_repairs_hull :: proc(t: ^testing.T) {
+	init_models()
+	new_game()
+	launch()
+	g.p.hull = 10
+	do_dock()
+	testing.expect_value(t, g.p.hull, 100)
+}

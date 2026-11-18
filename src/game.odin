@@ -248,6 +248,7 @@ do_dock :: proc() {
 	g.screen = .Status
 	g.p.speed = 0
 	g.p.shield = 100
+	g.p.hull = 100
 	clear(&g.ents)
 	clear(&g.pending)
 	play(.Dock)
