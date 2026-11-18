@@ -5,10 +5,10 @@ import "vendor:raylib/rlgl"
 import "core:os"
 import "core:strconv"
 
-// Linux/Wayland often reports a DPI scale of 1, so also scale by monitor height; macOS keeps the DPI value.
+// Linux/Wayland and Windows often report a DPI scale of 1, so also scale by monitor height; macOS keeps the DPI value.
 detect_scale :: proc() -> f32 {
 	s := rl.GetWindowScaleDPI().y
-	when ODIN_OS == .Linux {
+	when ODIN_OS != .Darwin {
 		s = max(s, f32(rl.GetMonitorHeight(rl.GetCurrentMonitor())) / 1280)
 	}
 	return clamp(s, 1, 4)
