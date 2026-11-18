@@ -1,0 +1,23 @@
+name: build
+on: [push, pull_request]
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - name: Linux deps
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libasound2-dev
+      - name: Test
+        run: mise exec -- odin test src -out:bin/elite_test -define:ODIN_TEST_THREADS=1
+      - name: Build
+        run: mise exec -- odin build src -out:bin/elite -o:speed
+      - uses: actions/upload-artifact@v4
+        with:
+          name: elite-${{ runner.os }}
+          path: bin/elite*
