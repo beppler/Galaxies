@@ -4,8 +4,28 @@ import "core:fmt"
 import "core:math"
 import rl "vendor:raylib"
 
-EQUIP_NAMES := [5]cstring{"Fuel (fill tank)", "Missile", "Large cargo bay (+25t)", "Docking computer", "Galactic hyperdrive"}
-EQUIP_PRICE := [5]int{0, 300, 4000, 1500, 50000} // tenths of credits (fuel: per 0.1 LY = 2)
+Equip :: enum {
+	Fuel,
+	Missile,
+	Cargo,
+	DockComp,
+	GalDrive,
+}
+
+EQUIP_NAMES := [Equip]cstring {
+	.Fuel     = "Fuel (fill tank)",
+	.Missile  = "Missile",
+	.Cargo    = "Large cargo bay (+25t)",
+	.DockComp = "Docking computer",
+	.GalDrive = "Galactic hyperdrive",
+}
+EQUIP_PRICE := [Equip]int { // tenths of credits (fuel: per 0.1 LY = 2)
+	.Fuel     = 0,
+	.Missile  = 300,
+	.Cargo    = 4000,
+	.DockComp = 1500,
+	.GalDrive = 50000,
+}
 
 // ---------------------------------------------------------------- chart
 
@@ -203,14 +223,28 @@ equip_input :: proc() {
 	if key_pressed(.DOWN) { g.sel = (g.sel + 1) % len(EQUIP_NAMES) }
 	if key_pressed(.UP) { g.sel = (g.sel + len(EQUIP_NAMES) - 1) % len(EQUIP_NAMES) }
 	if key_pressed(.ENTER) {
-		buy_equip(g.sel)
+		buy_equip(Equip(g.sel))
 	}
 }
 
-buy_equip :: proc(item: int) {
+// Pays for a one-off item; false (with a message) if already fitted or too expensive.
+@(private = "file")
+fit :: proc(owned: bool, item: Equip) -> bool {
+	if owned {
+		message("Already fitted")
+	} else if g.p.cash < EQUIP_PRICE[item] {
+		message("Not enough cash")
+	} else {
+		g.p.cash -= EQUIP_PRICE[item]
+		return true
+	}
+	return false
+}
+
+buy_equip :: proc(item: Equip) {
 	p := &g.p
 	switch item {
-	case 0:
+	case .Fuel:
 		need := MAX_FUEL - p.fuel
 		cost := need * 2
 		if need == 0 {
@@ -226,42 +260,21 @@ buy_equip :: proc(item: int) {
 			p.cash -= cost
 			message("Refuelled")
 		}
-	case 1:
+	case .Missile:
 		if p.missiles >= 4 {
 			message("Missile rack full")
-		} else if p.cash < EQUIP_PRICE[1] {
+		} else if p.cash < EQUIP_PRICE[.Missile] {
 			message("Not enough cash")
 		} else {
-			p.cash -= EQUIP_PRICE[1]
+			p.cash -= EQUIP_PRICE[.Missile]
 			p.missiles += 1
 		}
-	case 2:
-		if p.cargo_cap > 20 {
-			message("Already fitted")
-		} else if p.cash < EQUIP_PRICE[2] {
-			message("Not enough cash")
-		} else {
-			p.cash -= EQUIP_PRICE[2]
-			p.cargo_cap += 25
-		}
-	case 3:
-		if p.dock_comp {
-			message("Already fitted")
-		} else if p.cash < EQUIP_PRICE[3] {
-			message("Not enough cash")
-		} else {
-			p.cash -= EQUIP_PRICE[3]
-			p.dock_comp = true
-		}
-	case 4:
-		if p.gal_drive {
-			message("Already fitted")
-		} else if p.cash < EQUIP_PRICE[4] {
-			message("Not enough cash")
-		} else {
-			p.cash -= EQUIP_PRICE[4]
-			p.gal_drive = true
-		}
+	case .Cargo:
+		if fit(p.cargo_cap > 20, .Cargo) { p.cargo_cap += 25 }
+	case .DockComp:
+		if fit(p.dock_comp, .DockComp) { p.dock_comp = true }
+	case .GalDrive:
+		if fit(p.gal_drive, .GalDrive) { p.gal_drive = true }
 	}
 }
 
@@ -331,8 +344,8 @@ draw_docked :: proc() {
 	case .Equip:
 		text("EQUIPMENT", 40, y, 28, COL_GREEN)
 		for n, i in EQUIP_NAMES {
-			col := rl.WHITE if i == g.sel else COL_CYAN
-			price := cr((MAX_FUEL - g.p.fuel) * 2 if i == 0 else EQUIP_PRICE[i])
+			col := rl.WHITE if int(i) == g.sel else COL_CYAN
+			price := cr((MAX_FUEL - g.p.fuel) * 2 if i == .Fuel else EQUIP_PRICE[i])
 			text(fmt.ctprintf("%s    %s", n, price), 40, y + 60 + f32(i) * 34, 22, col)
 		}
 		text(fmt.ctprintf("Cash %s", cr(g.p.cash)), 40, y + 220, 20, COL_AMBER)

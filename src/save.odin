@@ -114,6 +114,14 @@ apply_save :: proc(d: SaveData) -> bool {
 	if d.galaxy < 0 || d.galaxy > 7 || d.system < 0 || d.system > 255 {
 		return false
 	}
+	cargo: [NUM_COMM]int
+	for c, i in d.cargo {
+		cargo[i] = max(c, 0)
+	}
+	cap := 45 if d.cargo_cap > 20 else 20
+	if cargo_used(cargo) > cap { // a hold over capacity would block all buying
+		return false
+	}
 	new_game()
 	g.galaxy_no = d.galaxy
 	g.galaxy = gen_galaxy(d.galaxy)
@@ -123,10 +131,8 @@ apply_save :: proc(d: SaveData) -> bool {
 	g.p.cash = max(d.cash, 0)
 	g.p.fuel = clamp(d.fuel, 0, MAX_FUEL)
 	g.p.missiles = clamp(d.missiles, 0, 4)
-	for c, i in d.cargo {
-		g.p.cargo[i] = max(c, 0)
-	}
-	g.p.cargo_cap = 45 if d.cargo_cap > 20 else 20
+	g.p.cargo = cargo
+	g.p.cargo_cap = cap
 	g.epoch = max(d.epoch, 1)
 	g.p.kills = max(d.kills, 0)
 	g.p.gal_drive = d.gal_drive
