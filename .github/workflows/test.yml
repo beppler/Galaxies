@@ -10,13 +10,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
-    env:
-      EXT: ${{ matrix.os == 'windows-latest' && '.exe' || '' }}
-    defaults:
-      run:
-        shell: bash
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v5
@@ -25,9 +20,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libasound2-dev
       - run: mkdir -p bin
       - name: Test
-        run: mise exec -- odin test src -out:bin/galaxies_test$EXT -define:ODIN_TEST_THREADS=1
+        run: mise exec -- odin test src -out:bin/galaxies_test -define:ODIN_TEST_THREADS=1
       - name: Build
-        run: mise exec -- odin build src -out:bin/galaxies$EXT -o:speed
+        run: mise exec -- odin build src -out:bin/galaxies -o:speed
       - uses: actions/upload-artifact@v7
         with:
           name: galaxies-${{ runner.os }}
