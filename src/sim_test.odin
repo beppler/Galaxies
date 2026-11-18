@@ -20,6 +20,16 @@ flight_simulation_runs :: proc(t: ^testing.T) {
 }
 
 @(test)
+turn_eases_in_and_out :: proc(t: ^testing.T) {
+	v: [3]f32
+	for _ in 0 ..< 30 { v = ease_turn(v, {1, 0, -1}, 1.0 / 60) }
+	testing.expect(t, v[0] > 0.9 && v[0] < 1.0) // ramps up, never overshoots
+	testing.expect(t, v[2] < -0.9 && v[2] > -1.0)
+	for _ in 0 ..< 60 { v = ease_turn(v, {}, 1.0 / 60) }
+	testing.expect(t, abs(v[0]) < 0.01 && abs(v[2]) < 0.01) // settles after release
+}
+
+@(test)
 docking_works_when_aligned :: proc(t: ^testing.T) {
 	init_models()
 	new_game()
