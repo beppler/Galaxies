@@ -21,6 +21,9 @@ SaveData :: struct {
 
 @(private = "file")
 save_path :: proc() -> (path: string, ok: bool) {
+	when ODIN_TEST { // tests call launch()/do_dock(); they must never touch a player's real save
+		return "", false
+	}
 	dir, err := os.user_config_dir(context.temp_allocator)
 	if err != nil {
 		return "", false
@@ -34,10 +37,12 @@ save_path :: proc() -> (path: string, ok: bool) {
 	return full, jerr2 == nil
 }
 
-save_game :: proc() {
+// Returns false (after showing "Save failed!") when nothing was written.
+save_game :: proc() -> bool {
 	path, ok := save_path()
 	if !ok {
-		return
+		message("Save failed!")
+		return false
 	}
 	d := SaveData {
 		galaxy    = g.galaxy_no,
@@ -54,20 +59,35 @@ save_game :: proc() {
 	}
 	data, err := json.marshal(d, {pretty = true}, context.temp_allocator)
 	if err != nil {
-		return
+		message("Save failed!")
+		return false
 	}
 	// write to a temp file and rename, so a crash never leaves a half-written save
 	tmp := fmt.tprintf("%s.tmp", path)
 	if os.write_entire_file(tmp, data) != nil || os.rename(tmp, path) != nil {
 		message("Save failed!")
-	}
-}
-
-load_game :: proc() -> bool {
-	path, ok := save_path()
-	if !ok {
 		return false
 	}
+	return true
+}
+
+// False when there is no save or it is unusable; an unusable file is renamed to save.json.bad so the
+// next save does not overwrite it.
+load_game :: proc() -> bool {
+	path, ok := save_path()
+	if !ok || !os.exists(path) {
+		return false
+	}
+	if load_file(path) {
+		return true
+	}
+	os.rename(path, fmt.tprintf("%s.bad", path))
+	message("Save unreadable, kept as save.json.bad")
+	return false
+}
+
+@(private = "file")
+load_file :: proc(path: string) -> bool {
 	data, err := os.read_entire_file(path, context.temp_allocator)
 	if err != nil {
 		return false
