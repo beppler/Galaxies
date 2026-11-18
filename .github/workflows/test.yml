@@ -31,7 +31,7 @@ jobs:
           mise exec -- odin test src -out:bin/galaxies_test${{ runner.os == 'Windows' && '.exe' || '' }} -define:ODIN_TEST_THREADS=1
 
       - name: Build
-        run: mise exec -- odin build src -out:bin/galaxies${{ runner.os == 'Windows' && '.exe' || '' }} -o:speed
+        run: mise exec -- odin build src -out:bin/galaxies${{ runner.os == 'Windows' && '.exe' || '' }} -o:speed${{ runner.os == 'Windows' && ' -subsystem:windows' || '' }}
       - uses: actions/upload-artifact@v7
         with:
           name: galaxies-${{ runner.os }}

@@ -17,6 +17,8 @@ packages (`libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev lib
 ./build.sh        # or build.bat on Windows;  ./build.sh run | test
 ```
 
+The Windows release build has no console window; use `build.bat debug` to build and run with one (logs and panics visible).
+
 ## Controls
 
 The game starts fullscreen; **F11** switches between fullscreen and windowed at any time.
