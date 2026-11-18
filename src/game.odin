@@ -624,24 +624,24 @@ dock_check :: proc() -> (can_dock: bool, inside_hull: bool) {
 read_controls :: proc(dt: f32) {
 	p := &g.p
 	ri, pi_, yi: f32
-	if rl.IsKeyDown(.LEFT) { ri -= 1 }
-	if rl.IsKeyDown(.RIGHT) { ri += 1 }
-	if rl.IsKeyDown(.UP) { pi_ -= 1 }
-	if rl.IsKeyDown(.DOWN) { pi_ += 1 }
-	if rl.IsKeyDown(.A) { yi -= 1 }
-	if rl.IsKeyDown(.D) { yi += 1 }
+	if key_down(.LEFT) { ri -= 1 }
+	if key_down(.RIGHT) { ri += 1 }
+	if key_down(.UP) { pi_ -= 1 }
+	if key_down(.DOWN) { pi_ += 1 }
+	if key_down(.A) { yi -= 1 }
+	if key_down(.D) { yi += 1 }
 	roll(&p.b, ri * 1.8 * dt)
 	pitch(&p.b, pi_ * 1.2 * dt)
 	yaw(&p.b, yi * 0.8 * dt)
 	orthonormalize(&p.b)
-	if rl.IsKeyDown(.W) { p.speed += 260 * dt }
-	if rl.IsKeyDown(.S) { p.speed -= 260 * dt }
+	if key_down(.W) { p.speed += 260 * dt }
+	if key_down(.S) { p.speed -= 260 * dt }
 	p.speed = clamp(p.speed, 0, MAX_SPEED)
 }
 
 flight_update :: proc(dt: f32) {
 	p := &g.p
-	if rl.IsKeyPressed(.F3) {
+	if key_pressed(.F3) {
 		g.screen = .Status if g.screen == .Chart else .Chart
 		g.cursor = g.target
 	}
@@ -651,27 +651,27 @@ flight_update :: proc(dt: f32) {
 	}
 
 	read_controls(dt)
-	if rl.IsKeyPressed(.T) {
+	if key_pressed(.T) {
 		g.compass_planet = !g.compass_planet
 	}
 
 	p.laser_cd -= dt
 	p.missile_cd -= dt
-	if rl.IsKeyDown(.SPACE) && p.laser_cd <= 0 {
+	if key_down(.SPACE) && p.laser_cd <= 0 {
 		if p.temp < 95 {
 			fire_laser()
 		} else if int(g.time * 4) % 2 == 0 {
 			message("LASER OVERHEAT")
 		}
 	}
-	if rl.IsKeyPressed(.M) && p.missile_cd <= 0 {
+	if key_pressed(.M) && p.missile_cd <= 0 {
 		fire_missile()
 	}
-	if rl.IsKeyPressed(.H) {
+	if key_pressed(.H) {
 		start_jump()
 		return
 	}
-	if rl.IsKeyPressed(.G) {
+	if key_pressed(.G) {
 		start_galactic_jump()
 		return
 	}
@@ -820,7 +820,7 @@ update :: proc(dt: f32) {
 			e.pos += e.vel * dt
 			e.life -= dt
 		}
-		if g.dead_t <= 0 && (rl.IsKeyPressed(.ENTER) || g.dead_t < -10) {
+		if g.dead_t <= 0 && (key_pressed(.ENTER) || g.dead_t < -10) {
 			if !load_game() {
 				new_game()
 			}
