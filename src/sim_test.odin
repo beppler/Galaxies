@@ -99,11 +99,12 @@ trade_and_equip_money :: proc(t: ^testing.T) {
 
 @(test)
 apply_save_clamps :: proc(t: ^testing.T) {
-	d := SaveData{galaxy = 1, system = 3, cash = -5, missiles = 99, cargo_cap = 999, epoch = 0}
+	d := SaveData{galaxy = 1, system = 3, cash = -5, missiles = 99, cargo_cap = 999, epoch = 0, kills = -50}
 	d.cargo[2] = -1000
 	d.cargo[4] = 3
 	testing.expect(t, apply_save(d))
 	testing.expect_value(t, g.p.cash, 0)
+	testing.expect_value(t, g.p.kills, 0)
 	testing.expect_value(t, g.p.missiles, 4)
 	testing.expect_value(t, g.p.cargo_cap, 45)
 	testing.expect_value(t, g.p.cargo[2], 0)
