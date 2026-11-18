@@ -18,6 +18,7 @@ main :: proc() {
 		rl.SetWindowSize(i32(1024 * ui_scale), i32(768 * ui_scale))
 	}
 	rl.SetMouseScale(1 / ui_scale, 1 / ui_scale)
+	rl.ToggleBorderlessWindowed() // start fullscreen; F11 toggles back
 	rl.SetWindowMinSize(i32(800 * ui_scale), i32(600 * ui_scale))
 	rl.SetTargetFPS(60)
 

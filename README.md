@@ -19,6 +19,8 @@ packages (`libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev lib
 
 ## Controls
 
+The game starts fullscreen; **F11** switches between fullscreen and windowed at any time.
+
 ### Flight
 
 | Key | Action |
@@ -32,7 +34,6 @@ packages (`libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev lib
 | H | Hyperspace to selected system |
 | G | Galactic hyperdrive |
 | F3 | Galactic chart (Enter sets destination) |
-| F11 | Fullscreen |
 
 ### Docked
 
