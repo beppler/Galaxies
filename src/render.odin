@@ -50,6 +50,19 @@ draw_line3 :: proc(a, b: Vec3, col: rl.Color) {
 	rl.DrawLineV(project(a), project(b), col)
 }
 
+// Bitmask of faces facing the camera; b/cb are model/camera bases, pts are model vertices in camera space.
+face_vis :: proc(id: ModelId, m: ^Model, b, cb: Basis, pts: []Vec3) -> (vis: u32) {
+	for n, i in m.fnorm {
+		// face is visible when the camera is on its outward side
+		if linalg.dot(to_local(cb, to_world(b, n)), pts[m.fvert[i]]) < 0 {
+			vis |= 1 << u32(i)
+		}
+	}
+	// slot faces are only seen through the front opening (face 24); a face-only test can't occlude them
+	if id == .Station && vis & (1 << 24) == 0 do vis &= ~u32(0xF << 20 | 1 << 25)
+	return
+}
+
 draw_model :: proc(id: ModelId, pos: Vec3, b: Basis, col: rl.Color) {
 	m := &models[id]
 	rel := pos - g.p.pos
@@ -62,20 +75,37 @@ draw_model :: proc(id: ModelId, pos: Vec3, b: Basis, col: rl.Color) {
 		w := rel + to_world(b, v)
 		pts[i] = to_local(g.p.b, w)
 	}
-	vis: u32
-	for n, i in m.fnorm {
-		// face is visible when the camera is on its outward side
-		if linalg.dot(to_local(g.p.b, to_world(b, n)), pts[m.fvert[i]]) < 0 {
-			vis |= 1 << u32(i)
-		}
-	}
-	// slot faces are only seen through the front opening (face 24); a face-only test can't occlude them
-	if id == .Station && vis & (1 << 24) == 0 do vis &= ~u32(0xF << 20 | 1 << 25)
+	vis := face_vis(id, m, b, g.p.b, pts[:])
 	for e, i in m.edges {
-		if m.emask[i] == 0 || m.emask[i] & vis != 0 {
+		if id == .Station && e[1] >= 20 { // slot interior: only the part seen through the opening
+			cam := to_local(b, -rel) // camera in model space
+			if cam.z <= ST_L { continue }
+			a, c, ok := slot_clip(cam, m.verts[e[0]], m.verts[e[1]])
+			if ok {
+				draw_line3(to_local(g.p.b, rel + to_world(b, a)), to_local(g.p.b, rel + to_world(b, c)), col)
+			}
+		} else if m.emask[i] == 0 || m.emask[i] & vis != 0 {
 			draw_line3(pts[e[0]], pts[e[1]], col)
 		}
 	}
+}
+
+// Clip a station-local segment to the pyramid from cam through the docking opening.
+slot_clip :: proc(cam, p0, p1: Vec3) -> (a, b: Vec3, ok: bool) {
+	sx := [4]f32{-SLOT_W, SLOT_W, SLOT_W, -SLOT_W}
+	sy := [4]f32{-SLOT_H, -SLOT_H, SLOT_H, SLOT_H}
+	mid := Vec3{0, 0, ST_L} - cam
+	t0, t1: f32 = 0, 1
+	for k in 0 ..< 4 {
+		n := (k + 1) % 4
+		nrm := linalg.cross(Vec3{sx[k], sy[k], ST_L} - cam, Vec3{sx[n], sy[n], ST_L} - cam)
+		if linalg.dot(nrm, mid) < 0 { nrm = -nrm }
+		f0, f1 := linalg.dot(nrm, p0 - cam), linalg.dot(nrm, p1 - cam)
+		if f0 < 0 && f1 < 0 { return }
+		if f0 < 0 { t0 = max(t0, f0 / (f0 - f1)) } else if f1 < 0 { t1 = min(t1, f0 / (f0 - f1)) }
+	}
+	if t1 - t0 < 1e-4 { return }
+	return p0 + (p1 - p0) * t0, p0 + (p1 - p0) * t1, true
 }
 
 kind_color :: proc(e: ^Entity) -> rl.Color {

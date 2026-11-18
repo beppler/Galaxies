@@ -131,3 +131,31 @@ bits_set :: proc(x: u32) -> int {
 	for i in 0 ..< 32 { n += int(x >> u32(i) & 1) }
 	return n
 }
+
+@(test)
+slot_clip_respects_opening :: proc(t: ^testing.T) {
+	p0, p1 := Vec3{-SLOT_W, -SLOT_H, ST_L}, Vec3{-SLOT_W, -SLOT_H, ST_L - SLOT_D}
+	_, _, on := slot_clip({0, 0, 1000}, p0, p1)
+	a, c, off := slot_clip({3000, 0, 300}, p0, p1)
+	testing.expect(t, on)
+	// grazing view: only a sliver of the far wall by the opening corner shows
+	testing.expect(t, !off || linalg.length(c - a) < 0.2 * SLOT_D)
+}
+
+@(test)
+station_slot_hidden_from_behind :: proc(t: ^testing.T) {
+	init_models()
+	m := &models[.Station]
+	rim_drawn :: proc(m: ^Model, cam: Vec3) -> bool {
+		pts: [32]Vec3
+		for v, i in m.verts { pts[i] = v - cam }
+		vis := face_vis(.Station, m, basis_identity(), basis_identity(), pts[:])
+		for e, i in m.edges {
+			if e[0] >= 16 && e[1] < 20 && m.emask[i] & vis != 0 { return true }
+		}
+		return false
+	}
+	testing.expect(t, rim_drawn(m, {0, 0, 1000}))
+	testing.expect(t, !rim_drawn(m, {0, 0, -1000}))
+	testing.expect(t, !rim_drawn(m, {0, 800, 0}))
+}
