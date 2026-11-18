@@ -5,15 +5,6 @@ import "vendor:raylib/rlgl"
 import "core:os"
 import "core:strconv"
 
-// Linux/Wayland and Windows often report a DPI scale of 1, so also scale by monitor height; macOS keeps the DPI value.
-detect_scale :: proc() -> f32 {
-	s := rl.GetWindowScaleDPI().y
-	when ODIN_OS != .Darwin {
-		s = max(s, f32(rl.GetMonitorHeight(rl.GetCurrentMonitor())) / 1280)
-	}
-	return clamp(s, 1, 4)
-}
-
 main :: proc() {
 	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT, .MSAA_4X_HINT})
 	// GLFW often reports 1.0 on X11, so GALAXIES_UI_SCALE overrides; it is read before the window
@@ -64,4 +55,13 @@ main :: proc() {
 		rl.EndDrawing()
 		free_all(context.temp_allocator)
 	}
+}
+
+// Linux/Wayland and Windows often report a DPI scale of 1, so also scale by monitor height; macOS keeps the DPI value.
+detect_scale :: proc() -> f32 {
+	s := rl.GetWindowScaleDPI().y
+	when ODIN_OS != .Darwin {
+		s = max(s, f32(rl.GetMonitorHeight(rl.GetCurrentMonitor())) / 1280)
+	}
+	return clamp(s, 1, 4)
 }
