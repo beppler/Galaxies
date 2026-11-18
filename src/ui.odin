@@ -273,7 +273,7 @@ draw_docked :: proc() {
 		lines := [?]cstring {
 			fmt.ctprintf("System:   %s", sys_name(s)),
 			fmt.ctprintf("Galaxy:   %d", g.galaxy_no + 1),
-			fmt.ctprintf("Cash:     %d.%d cr", p.cash / 10, p.cash % 10),
+			fmt.ctprintf("Cash:     %s", cr(p.cash)),
 			fmt.ctprintf("Fuel:     %.1f LY", f32(p.fuel) / 10),
 			fmt.ctprintf("Rank:     %s  (%d kills)", rank_name(p.kills), p.kills),
 			fmt.ctprintf("Missiles: %d", p.missiles),
@@ -315,7 +315,7 @@ draw_docked :: proc() {
 			text(fmt.ctprintf("%d", g.p.cargo[i]), 450, yy, 18, COL_AMBER)
 		}
 		text(
-			fmt.ctprintf("Cash %d.%d cr    Hold %d/%dt", g.p.cash / 10, g.p.cash % 10, cargo_used(g.p.cargo), g.p.cargo_cap),
+			fmt.ctprintf("Cash %s    Hold %d/%dt", cr(g.p.cash), cargo_used(g.p.cargo), g.p.cargo_cap),
 			40, y + 68 + 17 * 24 + 8, 18, COL_AMBER,
 		)
 		text("UP/DOWN select   B/Right buy   S/Left sell   (Shift = x10)", 40, view.h - 40, 16, COL_DIM)
@@ -325,15 +325,10 @@ draw_docked :: proc() {
 		text("EQUIPMENT", 40, y, 28, COL_GREEN)
 		for n, i in EQUIP_NAMES {
 			col := rl.WHITE if i == g.sel else COL_CYAN
-			price: string
-			if i == 0 {
-				price = fmt.tprintf("%d.%d cr", (MAX_FUEL - g.p.fuel) * 2 / 10, (MAX_FUEL - g.p.fuel) * 2 % 10)
-			} else {
-				price = fmt.tprintf("%d.%d cr", EQUIP_PRICE[i] / 10, EQUIP_PRICE[i] % 10)
-			}
+			price := cr((MAX_FUEL - g.p.fuel) * 2 if i == 0 else EQUIP_PRICE[i])
 			text(fmt.ctprintf("%s    %s", n, price), 40, y + 60 + f32(i) * 34, 22, col)
 		}
-		text(fmt.ctprintf("Cash %d.%d cr", g.p.cash / 10, g.p.cash % 10), 40, y + 220, 20, COL_AMBER)
+		text(fmt.ctprintf("Cash %s", cr(g.p.cash)), 40, y + 220, 20, COL_AMBER)
 		text("UP/DOWN select   ENTER buy", 40, view.h - 40, 16, COL_DIM)
 	}
 	if g.msg_t > 0 {

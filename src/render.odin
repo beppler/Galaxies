@@ -344,7 +344,7 @@ draw_hud :: proc() {
 	// right: info
 	rxp := view.w - 230
 	text(fmt.ctprintf("%s", sys_name(cur_sys())), rxp, top + 14, 18, COL_GREEN)
-	text(fmt.ctprintf("Cash  %d.%d cr", p.cash / 10, p.cash % 10), rxp, top + 40, 16, COL_AMBER)
+	text(fmt.ctprintf("Cash  %s", cr(p.cash)), rxp, top + 40, 16, COL_AMBER)
 	text(fmt.ctprintf("Rank  %s", rank_name(p.kills)), rxp, top + 60, 16, COL_GREEN)
 	text(fmt.ctprintf("Kills %d", p.kills), rxp, top + 80, 16, COL_GREEN)
 	text(fmt.ctprintf("Cargo %d/%dt", cargo_used(p.cargo), p.cargo_cap), rxp, top + 100, 16, COL_GREEN)

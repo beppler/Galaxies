@@ -377,7 +377,7 @@ kill_entity :: proc(e: ^Entity, by_player: bool) {
 			g.p.kills += 1
 			bounty := 1000 if e.model == .Sidewinder else 2500
 			g.p.cash += bounty
-			message("Pirate destroyed! Bounty %d.%d cr", bounty / 10, bounty % 10)
+			message("Pirate destroyed! Bounty %s", cr(bounty))
 		}
 		if rnd() < 0.5 {
 			loot := [4]int{3, 6, 10, 7}
