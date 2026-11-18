@@ -140,8 +140,9 @@ docked_update :: proc() {
 		return
 	}
 	if key_pressed(.F9) {
-		save_game()
-		message("Game saved")
+		if save_game() {
+			message("Game saved")
+		}
 	}
 	switch g.screen {
 	case .Status:
