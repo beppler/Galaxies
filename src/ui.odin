@@ -94,10 +94,8 @@ draw_chart :: proc() {
 		sx := x + f32(s.x) / 256 * w
 		sy := y + f32(s.y) / 256 * h
 		rl.DrawCircleV({sx, sy}, 2, COL_GREEN)
-		if w > 700 || i == g.cursor || i == g.target || i == g.cur {
-			if i == g.cursor || i == g.cur || i == g.target || w > 900 {
-				text(fmt.ctprintf("%s", sys_name(&s)), sx + 4, sy - 5, 10, COL_DIM if i != g.cursor else rl.WHITE)
-			}
+		if i == g.cursor || i == g.cur || i == g.target || w > 900 {
+			text(fmt.ctprintf("%s", sys_name(&s)), sx + 4, sy - 5, 10, COL_DIM if i != g.cursor else rl.WHITE)
 		}
 	}
 	rl.DrawCircleLinesV({cxp, cyp}, 6, COL_AMBER)
@@ -298,9 +296,9 @@ draw_docked :: proc() {
 	case .Market:
 		text(fmt.ctprintf("%s MARKET", sys_name(s)), 40, y, 28, COL_GREEN)
 		text("Item", 40, y + 44, 16, COL_DIM)
-			text("Price", 230, y + 44, 16, COL_DIM)
-			text("Stock", 330, y + 44, 16, COL_DIM)
-			text("Hold", 450, y + 44, 16, COL_DIM)
+		text("Price", 230, y + 44, 16, COL_DIM)
+		text("Stock", 330, y + 44, 16, COL_DIM)
+		text("Hold", 450, y + 44, 16, COL_DIM)
 		for c, i in COMMODITIES {
 			col := COL_CYAN
 			if i == g.sel {
