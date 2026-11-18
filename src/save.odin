@@ -1,6 +1,7 @@
 package main
 
 import "core:encoding/json"
+import "core:fmt"
 import "core:os"
 import "core:path/filepath"
 
@@ -53,7 +54,11 @@ save_game :: proc() {
 	if err != nil {
 		return
 	}
-	_ = os.write_entire_file(path, data)
+	// write to a temp file and rename, so a crash never leaves a half-written save
+	tmp := fmt.tprintf("%s.tmp", path)
+	if os.write_entire_file(tmp, data) != nil || os.rename(tmp, path) != nil {
+		message("Save failed!")
+	}
 }
 
 load_game :: proc() -> bool {
