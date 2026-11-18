@@ -81,7 +81,8 @@ viper_e := [?][2]u8{
 @(private = "file")
 viper_f := [?][4]u8{
 	{0, 1, 3, X}, {0, 3, 2, X}, {0, 2, 4, X}, {0, 4, 1, X},
-	{1, 3, 5, 6}, {1, 4, 5, 6}, {2, 3, 5, 7}, {2, 4, 5, 7},
+	{1, 3, 6, X}, {3, 5, 6, X}, {1, 4, 6, X}, {4, 5, 6, X},
+	{2, 3, 7, X}, {3, 5, 7, X}, {2, 4, 7, X}, {4, 5, 7, X},
 }
 
 @(private = "file")
@@ -144,6 +145,8 @@ set_model :: proc(id: ModelId, v: []Vec3, e: [][2]u8, f: [][4]u8 = nil, flip: u3
 			n = -n
 		}
 		m.fnorm[i], m.fvert[i] = linalg.normalize(n), fc[0]
+		// the normal comes from 3 vertices, so a 4th off the plane gives wrong hidden-line results
+		assert(fc[3] == X || abs(linalg.dot(m.fnorm[i], v[fc[3]] - v[fc[0]])) < 1, "non-planar model face")
 		for ei, k in e {
 			a, b := false, false
 			for w in fc {

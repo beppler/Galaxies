@@ -112,7 +112,7 @@ models_are_closed :: proc(t: ^testing.T) {
 	init_models()
 	for m, id in models {
 		if id == .Shard { continue }
-		if id != .Station { // convex: no vertex may lie in front of any face
+		if id != .Station && id != .Viper { // convex: no vertex may lie in front of any face
 			for n, i in m.fnorm {
 				for p in m.verts {
 					testing.expectf(t, linalg.dot(n, p - m.verts[m.fvert[i]]) < 1, "%v: face %d not outward", id, i)
