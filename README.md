@@ -23,7 +23,7 @@ The Windows release build has no console window; use `build.bat debug` to build 
 
 ## Controls
 
-The game starts fullscreen; **F11** switches between fullscreen and windowed at any time.
+The game starts fullscreen; **F11** (or **Alt+Enter**; on macOS F11 is Show Desktop, so use **Cmd+Enter**) switches between fullscreen and windowed at any time.
 
 ### Flight
 
