@@ -69,3 +69,40 @@ dock_repairs_hull :: proc(t: ^testing.T) {
 	do_dock()
 	testing.expect_value(t, g.p.hull, 100)
 }
+
+@(test)
+trade_and_equip_money :: proc(t: ^testing.T) {
+	new_game()
+	g.market.qty[0] = 5
+	g.market.price[0] = 100
+	g.p.cash = 250
+	buy(0, 10) // only cash for 2
+	testing.expect_value(t, g.p.cargo[0], 2)
+	testing.expect_value(t, g.p.cash, 50)
+	sell(0, 10) // only 2 in hold
+	testing.expect_value(t, g.p.cargo[0], 0)
+	testing.expect_value(t, g.p.cash, 250)
+	g.p.cash = 100
+	buy_equip(3) // galactic drive costs 50000
+	testing.expect(t, !g.p.gal_drive)
+	testing.expect_value(t, g.p.cash, 100)
+	g.p.fuel = MAX_FUEL - 10
+	buy_equip(0) // 20 for 10 fuel
+	testing.expect_value(t, g.p.fuel, MAX_FUEL)
+	testing.expect_value(t, g.p.cash, 80)
+}
+
+@(test)
+apply_save_clamps :: proc(t: ^testing.T) {
+	d := SaveData{galaxy = 1, system = 3, cash = -5, missiles = 99, cargo_cap = 999, epoch = 0}
+	d.cargo[2] = -1000
+	d.cargo[4] = 3
+	testing.expect(t, apply_save(d))
+	testing.expect_value(t, g.p.cash, 0)
+	testing.expect_value(t, g.p.missiles, 4)
+	testing.expect_value(t, g.p.cargo_cap, 45)
+	testing.expect_value(t, g.p.cargo[2], 0)
+	testing.expect_value(t, g.p.cargo[4], 3)
+	testing.expect_value(t, g.epoch, u32(1))
+	testing.expect(t, !apply_save(SaveData{galaxy = 9}))
+}

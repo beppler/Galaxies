@@ -158,48 +158,59 @@ market_input :: proc() {
 	if rl.IsKeyPressed(.DOWN) { g.sel = (g.sel + 1) % NUM_COMM }
 	if rl.IsKeyPressed(.UP) { g.sel = (g.sel + NUM_COMM - 1) % NUM_COMM }
 	n := 10 if (rl.IsKeyDown(.LEFT_SHIFT) || rl.IsKeyDown(.RIGHT_SHIFT)) else 1
-	p := &g.p
-	i := g.sel
 	if rl.IsKeyPressed(.B) || rl.IsKeyPressed(.RIGHT) {
-		for _ in 0 ..< n {
-			if g.market.qty[i] <= 0 {
-				message("None for sale")
-				break
-			}
-			if p.cash < g.market.price[i] {
-				message("Not enough cash")
-				break
-			}
-			if cargo_used(p.cargo) >= p.cargo_cap {
-				message("Cargo hold full")
-				break
-			}
-			p.cash -= g.market.price[i]
-			g.market.qty[i] -= 1
-			p.cargo[i] += 1
-		}
+		buy(g.sel, n)
 	}
 	if rl.IsKeyPressed(.S) || rl.IsKeyPressed(.LEFT) {
-		for _ in 0 ..< n {
-			if p.cargo[i] <= 0 {
-				message("None in hold")
-				break
-			}
-			p.cash += g.market.price[i]
-			g.market.qty[i] += 1
-			p.cargo[i] -= 1
+		sell(g.sel, n)
+	}
+}
+
+buy :: proc(i, n: int) {
+	p := &g.p
+	for _ in 0 ..< n {
+		if g.market.qty[i] <= 0 {
+			message("None for sale")
+			break
 		}
+		if p.cash < g.market.price[i] {
+			message("Not enough cash")
+			break
+		}
+		if cargo_used(p.cargo) >= p.cargo_cap {
+			message("Cargo hold full")
+			break
+		}
+		p.cash -= g.market.price[i]
+		g.market.qty[i] -= 1
+		p.cargo[i] += 1
+	}
+}
+
+sell :: proc(i, n: int) {
+	p := &g.p
+	for _ in 0 ..< n {
+		if p.cargo[i] <= 0 {
+			message("None in hold")
+			break
+		}
+		p.cash += g.market.price[i]
+		g.market.qty[i] += 1
+		p.cargo[i] -= 1
 	}
 }
 
 equip_input :: proc() {
 	if rl.IsKeyPressed(.DOWN) { g.sel = (g.sel + 1) % 4 }
 	if rl.IsKeyPressed(.UP) { g.sel = (g.sel + 3) % 4 }
-	if !rl.IsKeyPressed(.ENTER) {
-		return
+	if rl.IsKeyPressed(.ENTER) {
+		buy_equip(g.sel)
 	}
+}
+
+buy_equip :: proc(item: int) {
 	p := &g.p
-	switch g.sel {
+	switch item {
 	case 0:
 		need := MAX_FUEL - p.fuel
 		cost := need * 2

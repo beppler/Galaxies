@@ -76,6 +76,10 @@ load_game :: proc() -> bool {
 	if json.unmarshal(data, &d, allocator = context.temp_allocator) != nil {
 		return false
 	}
+	return apply_save(d)
+}
+
+apply_save :: proc(d: SaveData) -> bool {
 	if d.galaxy < 0 || d.galaxy > 7 || d.system < 0 || d.system > 255 {
 		return false
 	}
