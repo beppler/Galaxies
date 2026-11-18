@@ -597,18 +597,9 @@ dock_check :: proc() -> (can_dock: bool, inside_hull: bool) {
 
 // ---------------------------------------------------------------- per-frame
 
-flight_update :: proc(dt: f32) {
+// Steering and throttle keys.
+read_controls :: proc(dt: f32) {
 	p := &g.p
-	if rl.IsKeyPressed(.F3) {
-		g.chart_open = !g.chart_open
-		g.cursor = g.target
-	}
-	if g.chart_open {
-		chart_input()
-		return
-	}
-
-	// controls
 	ri, pi_, yi: f32
 	if rl.IsKeyDown(.LEFT) { ri -= 1 }
 	if rl.IsKeyDown(.RIGHT) { ri += 1 }
@@ -623,6 +614,20 @@ flight_update :: proc(dt: f32) {
 	if rl.IsKeyDown(.W) { p.speed += 260 * dt }
 	if rl.IsKeyDown(.S) { p.speed -= 260 * dt }
 	p.speed = clamp(p.speed, 0, MAX_SPEED)
+}
+
+flight_update :: proc(dt: f32) {
+	p := &g.p
+	if rl.IsKeyPressed(.F3) {
+		g.chart_open = !g.chart_open
+		g.cursor = g.target
+	}
+	if g.chart_open {
+		chart_input()
+		return
+	}
+
+	read_controls(dt)
 
 	p.laser_cd -= dt
 	p.missile_cd -= dt
