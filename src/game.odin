@@ -298,7 +298,6 @@ finish_jump :: proc() {
 		g.galaxy_no = (g.galaxy_no + 1) % 8
 		g.galaxy = gen_galaxy(g.galaxy_no)
 		g.p.fuel = MAX_FUEL
-		g.cur = g.cur // keep index: neighbouring region in new galaxy
 		g.target = g.cur
 	} else {
 		g.cur = g.target
@@ -455,7 +454,7 @@ fire_missile :: proc() {
 detonate_missile :: proc(m: ^Entity) {
 	m.alive = false
 	explode(m.pos, 10)
-	for &e, _ in g.ents {
+	for &e in g.ents {
 		if targetable(&e) && linalg.length(e.pos - m.pos) < 250 + models[e.model].radius {
 			hit_entity(&e, 120, m.from_player)
 		}
@@ -482,7 +481,6 @@ steer :: proc(e: ^Entity, target: Vec3, dt: f32) {
 }
 
 enemy_fire :: proc(e: ^Entity) {
-	p := &g.p
 	e.fire_cd = 0.6 + rnd() * 0.8
 	if rnd() < 0.55 {
 		damage_player(5 if e.kind == .Pirate else 4)
