@@ -6,7 +6,9 @@ on:
 permissions:
   contents: read
 jobs:
-  test:
+  # test-matrix is a matrix job that runs on multiple OSes. It is used to test the code on different platforms.
+  test-matrix:
+    name: test ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -18,15 +20,30 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v5
+
       - name: Linux deps
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libasound2-dev
-      - run: mkdir -p bin
+
       - name: Test
-        run: mise exec -- odin test src -out:bin/galaxies_test${{ runner.os == 'Windows' && '.exe' || '' }} -define:ODIN_TEST_THREADS=1
+        run: |
+          mkdir -p bin
+          mise exec -- odin test src -out:bin/galaxies_test${{ runner.os == 'Windows' && '.exe' || '' }} -define:ODIN_TEST_THREADS=1
+
       - name: Build
         run: mise exec -- odin build src -out:bin/galaxies${{ runner.os == 'Windows' && '.exe' || '' }} -o:speed
       - uses: actions/upload-artifact@v7
         with:
           name: galaxies-${{ runner.os }}
           path: bin/galaxies*
+
+  # Single stable check name for the branch ruleset: require only "test".
+  test:
+    name: test
+    needs: test-matrix
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all matrix jobs to pass
+        if: needs.test-matrix.result != 'success'
+        run: exit 1
