@@ -1,5 +1,6 @@
 package main
 
+import "base:runtime"
 import "core:math"
 import "core:math/linalg"
 
@@ -162,6 +163,9 @@ set_model :: proc(id: ModelId, v: []Vec3, e: [][2]u8, f: [][4]u8 = nil, flip: u3
 }
 
 init_models :: proc() {
+	if models[.Cobra].verts != nil { return } // already built
+	// program-lifetime data: keep it out of any per-test tracking allocator
+	context.allocator = runtime.heap_allocator()
 	set_model(.Cobra, cobra_v[:], cobra_e[:], cobra_f[:])
 	set_model(.Sidewinder, side_v[:], side_e[:], side_f[:])
 	set_model(.Viper, viper_v[:], viper_e[:], viper_f[:])

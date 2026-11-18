@@ -151,6 +151,12 @@ new_game :: proc() {
 	}
 }
 
+free_game :: proc() {
+	delete(g.ents)
+	delete(g.pending)
+	g.ents, g.pending = nil, nil
+}
+
 setup_system :: proc() {
 	g.market = make_market(cur_sys(), u32(g.cur) * 977 + u32(g.galaxy_no) * 31337 + g.epoch * 7919)
 }

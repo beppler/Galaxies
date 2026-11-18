@@ -7,6 +7,7 @@ import "core:math/linalg"
 flight_simulation_runs :: proc(t: ^testing.T) {
 	init_models()
 	new_game()
+	defer free_game()
 	launch()
 	testing.expect_value(t, g.state, State.Flight)
 	for _ in 0 ..< 1200 {
@@ -22,6 +23,7 @@ flight_simulation_runs :: proc(t: ^testing.T) {
 docking_works_when_aligned :: proc(t: ^testing.T) {
 	init_models()
 	new_game()
+	defer free_game()
 	launch()
 	clear(&g.ents)
 	g.station.spin = 0
@@ -43,6 +45,7 @@ docking_works_when_aligned :: proc(t: ^testing.T) {
 jump_changes_system :: proc(t: ^testing.T) {
 	init_models()
 	new_game()
+	defer free_game()
 	// find a reachable neighbour
 	for i in 0 ..< 256 {
 		if i != g.cur && jump_cost(i) <= g.p.fuel {
@@ -64,6 +67,7 @@ jump_changes_system :: proc(t: ^testing.T) {
 dock_repairs_hull :: proc(t: ^testing.T) {
 	init_models()
 	new_game()
+	defer free_game()
 	launch()
 	g.p.hull = 10
 	do_dock()
@@ -73,6 +77,7 @@ dock_repairs_hull :: proc(t: ^testing.T) {
 @(test)
 trade_and_equip_money :: proc(t: ^testing.T) {
 	new_game()
+	defer free_game()
 	g.market.qty[0] = 5
 	g.market.price[0] = 100
 	g.p.cash = 250
