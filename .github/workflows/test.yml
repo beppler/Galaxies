@@ -13,7 +13,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     env:
-      EXT: ${{ runner.os == 'Windows' && '.exe' || '' }}
+      EXT: ${{ matrix.os == 'windows-latest' && '.exe' || '' }}
     defaults:
       run:
         shell: bash
