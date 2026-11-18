@@ -49,7 +49,6 @@ Entity :: struct {
 	fire_cd:     f32,
 	cargo:       int,
 	angry:       bool,
-	from_player: bool,
 	target_id:   int,
 	tgt:         Vec3,
 	spin:        f32,
@@ -470,7 +469,7 @@ fire_missile :: proc() {
 	p.missile_cd = 1
 	spawn(Entity {
 		kind = .Missile, model = .Missile, pos = p.pos + p.b.f * 60, b = p.b,
-		speed = max(p.speed, 300), target_id = tid, life = 8, from_player = true,
+		speed = max(p.speed, 300), target_id = tid, life = 8,
 		turn = 2.5,
 	})
 	play(.Laser)
@@ -481,7 +480,7 @@ detonate_missile :: proc(m: ^Entity) {
 	explode(m.pos, 10)
 	for &e in g.ents {
 		if targetable(&e) && linalg.length(e.pos - m.pos) < 250 + models[e.model].radius {
-			hit_entity(&e, 120, m.from_player)
+			hit_entity(&e, 120, true)
 		}
 	}
 }
