@@ -6,7 +6,9 @@ on:
 permissions:
   contents: read
 jobs:
-  test:
+  # test-matrix is a matrix job that runs on multiple OSes. It is used to test the code on different platforms.
+  test-matrix:
+    name: Test on ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -30,3 +32,14 @@ jobs:
         with:
           name: galaxies-${{ runner.os }}
           path: bin/galaxies*
+
+  # Single stable check name for the branch ruleset: require only "test".
+  test:
+    name: test
+    needs: test-matrix
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all matrix jobs to pass
+        if: needs.test-matrix.result != 'success'
+        run: exit 1
