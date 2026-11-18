@@ -384,7 +384,7 @@ draw_flight :: proc() {
 		c.a = u8(clamp(g.flash * 300, 0, 120))
 		rl.DrawRectangle(0, 0, i32(view.w), i32(view.vh), c)
 	}
-	text("F3 chart  H jump  SPACE fire  M missile  W/S speed  arrows roll/pitch  A/D yaw", 10, 6, 12, COL_DIM)
+	text("F3 chart  H jump  SPACE fire  M missile  W/S speed  arrows roll/pitch  A/D yaw  F11 fullscreen", 10, 6, 12, COL_DIM)
 }
 
 draw_hyper :: proc() {

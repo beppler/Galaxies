@@ -260,7 +260,7 @@ draw_docked :: proc() {
 	s := cur_sys()
 	rl.DrawRectangle(0, 0, i32(view.w), 36, {8, 14, 12, 255})
 	text(
-		fmt.ctprintf("%s  Station    F1 Status  F2 Market  F3 Chart  F4 Equip  F5/L Launch  F9 Save", sys_name(s)),
+		fmt.ctprintf("%s  F1 Status  F2 Market  F3 Chart  F4 Equip  F5/L Launch  F9 Save  F11 Full", sys_name(s)),
 		12, 10, 16, COL_GREEN,
 	)
 	y: f32 = 60
