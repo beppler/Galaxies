@@ -24,7 +24,7 @@ packages (`libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev lib
 | Key | Action |
 | --- | ------ |
 | Arrows | Roll / pitch |
-| Q / E | Yaw |
+| A / D | Yaw |
 | W / S | Speed up / down |
 | Space | Fire laser |
 | M | Fire missile |
