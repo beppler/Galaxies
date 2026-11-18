@@ -12,12 +12,12 @@ EQUIP_PRICE := [4]int{0, 300, 4000, 50000} // tenths of credits (fuel: per 0.1 L
 chart_rect :: proc() -> (x, y, w, h: f32) {
 	w = min(view.w - 40, 1024)
 	h = w / 2
-	if h > view.vh - 160 {
-		h = view.vh - 160
+	if h > view.vh - 186 {
+		h = view.vh - 186
 		w = h * 2
 	}
 	x = (view.w - w) / 2
-	y = 50
+	y = 76
 	return
 }
 
@@ -79,8 +79,8 @@ chart_input :: proc() {
 
 draw_chart :: proc() {
 	x, y, w, h := chart_rect()
-	text("GALACTIC CHART", x, 14, 24, COL_GREEN)
-	text(fmt.ctprintf("Galaxy %d   Fuel %.1f LY", g.galaxy_no + 1, f32(g.p.fuel) / 10), x + 260, 20, 16, COL_AMBER)
+	text("GALACTIC CHART", x, 42, 24, COL_GREEN)
+	text(fmt.ctprintf("Galaxy %d   Fuel %.1f LY", g.galaxy_no + 1, f32(g.p.fuel) / 10), x + 260, 48, 16, COL_AMBER)
 	rl.DrawRectangleLines(i32(x), i32(y), i32(w), i32(h), COL_DIM)
 
 	cur := cur_sys()
