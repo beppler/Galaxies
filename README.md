@@ -37,6 +37,7 @@ The game starts fullscreen; **F11** switches between fullscreen and windowed at 
 | T | Compass: station / planet |
 | H | Hyperspace to selected system |
 | G | Galactic hyperdrive |
+| C | Docking computer: dock instantly when in front of the station slot and pointing at it (bought in F4) |
 | F3 | Galactic chart (Enter sets destination) |
 
 ### Docked

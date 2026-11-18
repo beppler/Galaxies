@@ -4,8 +4,8 @@ import "core:fmt"
 import "core:math"
 import rl "vendor:raylib"
 
-EQUIP_NAMES := [4]cstring{"Fuel (fill tank)", "Missile", "Large cargo bay (+25t)", "Galactic hyperdrive"}
-EQUIP_PRICE := [4]int{0, 300, 4000, 50000} // tenths of credits (fuel: per 0.1 LY = 2)
+EQUIP_NAMES := [5]cstring{"Fuel (fill tank)", "Missile", "Large cargo bay (+25t)", "Docking computer", "Galactic hyperdrive"}
+EQUIP_PRICE := [5]int{0, 300, 4000, 1500, 50000} // tenths of credits (fuel: per 0.1 LY = 2)
 
 // ---------------------------------------------------------------- chart
 
@@ -200,8 +200,8 @@ sell :: proc(i, n: int) {
 }
 
 equip_input :: proc() {
-	if key_pressed(.DOWN) { g.sel = (g.sel + 1) % 4 }
-	if key_pressed(.UP) { g.sel = (g.sel + 3) % 4 }
+	if key_pressed(.DOWN) { g.sel = (g.sel + 1) % len(EQUIP_NAMES) }
+	if key_pressed(.UP) { g.sel = (g.sel + len(EQUIP_NAMES) - 1) % len(EQUIP_NAMES) }
 	if key_pressed(.ENTER) {
 		buy_equip(g.sel)
 	}
@@ -245,12 +245,21 @@ buy_equip :: proc(item: int) {
 			p.cargo_cap += 25
 		}
 	case 3:
-		if p.gal_drive {
+		if p.dock_comp {
 			message("Already fitted")
 		} else if p.cash < EQUIP_PRICE[3] {
 			message("Not enough cash")
 		} else {
 			p.cash -= EQUIP_PRICE[3]
+			p.dock_comp = true
+		}
+	case 4:
+		if p.gal_drive {
+			message("Already fitted")
+		} else if p.cash < EQUIP_PRICE[4] {
+			message("Not enough cash")
+		} else {
+			p.cash -= EQUIP_PRICE[4]
 			p.gal_drive = true
 		}
 	}

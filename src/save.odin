@@ -16,6 +16,7 @@ SaveData :: struct {
 	cargo_cap: int,
 	kills:     int,
 	gal_drive: bool,
+	dock_comp: bool,
 	epoch:     u32,
 	fugitive:  bool,
 }
@@ -63,6 +64,7 @@ save_game :: proc() -> bool {
 		cargo_cap = g.p.cargo_cap,
 		kills     = g.p.kills,
 		gal_drive = g.p.gal_drive,
+		dock_comp = g.p.dock_comp,
 		epoch     = g.epoch,
 		fugitive  = g.p.fugitive,
 	}
@@ -128,6 +130,7 @@ apply_save :: proc(d: SaveData) -> bool {
 	g.epoch = max(d.epoch, 1)
 	g.p.kills = max(d.kills, 0)
 	g.p.gal_drive = d.gal_drive
+	g.p.dock_comp = d.dock_comp
 	g.p.fugitive = d.fugitive
 	setup_system()
 	return true
