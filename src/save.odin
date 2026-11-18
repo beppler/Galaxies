@@ -126,7 +126,7 @@ apply_save :: proc(d: SaveData) -> bool {
 	}
 	g.p.cargo_cap = 45 if d.cargo_cap > 20 else 20
 	g.epoch = max(d.epoch, 1)
-	g.p.kills = d.kills
+	g.p.kills = max(d.kills, 0)
 	g.p.gal_drive = d.gal_drive
 	g.p.fugitive = d.fugitive
 	setup_system()
