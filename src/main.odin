@@ -1,12 +1,33 @@
 package main
 
 import rl "vendor:raylib"
+import "vendor:raylib/rlgl"
+import "core:os"
+import "core:strconv"
+
+// Linux/Wayland often reports a DPI scale of 1, so also scale by monitor height; macOS keeps the DPI value.
+detect_scale :: proc() -> f32 {
+	s := rl.GetWindowScaleDPI().y
+	when ODIN_OS == .Linux {
+		s = max(s, f32(rl.GetMonitorHeight(rl.GetCurrentMonitor())) / 1280)
+	}
+	return clamp(s, 1, 4)
+}
 
 main :: proc() {
 	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT, .MSAA_4X_HINT})
-	rl.InitWindow(1024, 768, "Galaxies")
+	// GLFW often reports 1.0 on X11, so GALAXIES_UI_SCALE overrides; it is read before the window
+	// exists so the window is created at the right size.
+	env, has_env := strconv.parse_f32(os.get_env("GALAXIES_UI_SCALE", context.temp_allocator))
+	ui_scale = clamp(env, 1, 4) if has_env else 1
+	rl.InitWindow(i32(1024 * ui_scale), i32(768 * ui_scale), "Galaxies")
 	defer rl.CloseWindow()
-	rl.SetWindowMinSize(800, 600)
+	if !has_env {
+		ui_scale = detect_scale()
+		rl.SetWindowSize(i32(1024 * ui_scale), i32(768 * ui_scale))
+	}
+	rl.SetMouseScale(1 / ui_scale, 1 / ui_scale)
+	rl.SetWindowMinSize(i32(800 * ui_scale), i32(600 * ui_scale))
 	rl.SetTargetFPS(60)
 
 	init_font()
@@ -23,11 +44,16 @@ main :: proc() {
 		if rl.IsKeyPressed(.F11) {
 			rl.ToggleBorderlessWindowed()
 		}
+		if !has_env && rl.IsWindowResized() { // window may have moved to a monitor with another DPI
+			ui_scale = detect_scale()
+			rl.SetMouseScale(1 / ui_scale, 1 / ui_scale)
+		}
 		dt := min(rl.GetFrameTime(), 0.05)
 		update_view()
 		update(dt)
 
 		rl.BeginDrawing()
+		rlgl.Scalef(ui_scale, ui_scale, 1)
 		rl.ClearBackground(rl.BLACK)
 		switch g.state {
 		case .Docked: draw_docked()
