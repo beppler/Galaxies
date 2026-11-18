@@ -6,6 +6,8 @@ The code is written from scratch, but the galaxy generation and commodity/market
 the design of the original *Elite* (3x16-bit "twist" seed, 8 galaxies x 256 systems, start at
 Lave) and may be closely derived from it.
 
+For how the code is organized, see [doc/architecture.md](doc/architecture.md).
+
 ## Build
 
 Toolchain is pinned in `mise.toml` (`mise install`).
