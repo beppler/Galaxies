@@ -628,8 +628,8 @@ read_controls :: proc(dt: f32) {
 	if rl.IsKeyDown(.RIGHT) { ri += 1 }
 	if rl.IsKeyDown(.UP) { pi_ -= 1 }
 	if rl.IsKeyDown(.DOWN) { pi_ += 1 }
-	if rl.IsKeyDown(.Q) { yi -= 1 }
-	if rl.IsKeyDown(.E) { yi += 1 }
+	if rl.IsKeyDown(.A) { yi -= 1 }
+	if rl.IsKeyDown(.D) { yi += 1 }
 	roll(&p.b, ri * 1.8 * dt)
 	pitch(&p.b, pi_ * 1.2 * dt)
 	yaw(&p.b, yi * 0.8 * dt)
