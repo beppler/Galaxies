@@ -106,3 +106,28 @@ apply_save_clamps :: proc(t: ^testing.T) {
 	testing.expect_value(t, g.epoch, u32(1))
 	testing.expect(t, !apply_save(SaveData{galaxy = 9}))
 }
+
+@(test)
+models_are_closed :: proc(t: ^testing.T) {
+	init_models()
+	for m, id in models {
+		if id == .Shard { continue }
+		if id != .Station { // convex: no vertex may lie in front of any face
+			for n, i in m.fnorm {
+				for p in m.verts {
+					testing.expectf(t, linalg.dot(n, p - m.verts[m.fvert[i]]) < 1, "%v: face %d not outward", id, i)
+				}
+			}
+		}
+		for k in m.emask {
+			testing.expectf(t, bits_set(k) == 2, "%v: edge in %d faces", id, bits_set(k))
+		}
+	}
+}
+
+@(private = "file")
+bits_set :: proc(x: u32) -> int {
+	n := 0
+	for i in 0 ..< 32 { n += int(x >> u32(i) & 1) }
+	return n
+}

@@ -62,8 +62,17 @@ draw_model :: proc(id: ModelId, pos: Vec3, b: Basis, col: rl.Color) {
 		w := rel + to_world(b, v)
 		pts[i] = to_local(g.p.b, w)
 	}
-	for e in m.edges {
-		draw_line3(pts[e[0]], pts[e[1]], col)
+	vis: u32
+	for n, i in m.fnorm {
+		// face is visible when the camera is on its outward side
+		if linalg.dot(to_local(g.p.b, to_world(b, n)), pts[m.fvert[i]]) < 0 {
+			vis |= 1 << u32(i)
+		}
+	}
+	for e, i in m.edges {
+		if m.emask[i] == 0 || m.emask[i] & vis != 0 {
+			draw_line3(pts[e[0]], pts[e[1]], col)
+		}
 	}
 }
 

@@ -20,4 +20,4 @@ Docked: F1 status, F2 market (B/S buy/sell, Shift = x10), F3 chart, F4 equipment
 Saves go to the user config dir (`odin-elite/save.json`) on dock/launch.
 
 ## Ideas / not yet done
-Hidden-line removal, planets, missions, more ship types, gamepad support.
+Planets, missions, more ship types, gamepad support.
