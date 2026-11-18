@@ -22,10 +22,11 @@ View :: struct {
 }
 
 view: View
+ui_scale: f32 = 1 // whole frame is drawn scaled by this; view/mouse are in scaled units
 
 update_view :: proc() {
-	view.w = f32(rl.GetScreenWidth())
-	view.h = f32(rl.GetScreenHeight())
+	view.w = f32(rl.GetScreenWidth()) / ui_scale
+	view.h = f32(rl.GetScreenHeight()) / ui_scale
 	view.vh = view.h - HUD_H
 	view.cx = view.w * 0.5
 	view.cy = view.vh * 0.5
