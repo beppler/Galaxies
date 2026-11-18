@@ -603,14 +603,18 @@ spawn_enemy :: proc() {
 
 // ---------------------------------------------------------------- docking
 
+// Player position in the station's own axes (x right, y up, z out of the slot).
+station_local :: proc() -> (lx, ly, lz: f32) {
+	st := &g.station
+	rel := g.p.pos - st.pos
+	return linalg.dot(rel, st.b.r), linalg.dot(rel, st.b.u), linalg.dot(rel, st.b.f)
+}
+
 // Player position/orientation relative to the station slot.
 dock_check :: proc() -> (can_dock: bool, inside_hull: bool) {
 	st := &g.station
 	p := &g.p
-	rel := p.pos - st.pos
-	lx := linalg.dot(rel, st.b.r)
-	ly := linalg.dot(rel, st.b.u)
-	lz := linalg.dot(rel, st.b.f)
+	lx, ly, lz := station_local()
 	radial := math.sqrt(lx * lx + ly * ly)
 	in_hole_xy := abs(lx) < SLOT_W && abs(ly) < SLOT_H
 	inside_hull = abs(lz) < ST_L + 15 && radial < ST_R && !(in_hole_xy && lz > ST_L - 10)
@@ -623,21 +627,9 @@ dock_check :: proc() -> (can_dock: bool, inside_hull: bool) {
 // Docking computer: in front of the slot, nose toward it. Roll and speed don't matter.
 dock_comp_ready :: proc() -> bool {
 	if !g.p.dock_comp { return false }
-	st := &g.station
-	rel := g.p.pos - st.pos
-	lx := linalg.dot(rel, st.b.r)
-	ly := linalg.dot(rel, st.b.u)
-	lz := linalg.dot(rel, st.b.f)
+	lx, ly, lz := station_local()
 	return abs(lx) < 3 * SLOT_W && abs(ly) < 3 * SLOT_H && lz > ST_L + 15 && lz < ST_L + 1500 &&
-		linalg.dot(g.p.b.f, -st.b.f) > 0.9
-}
-
-dock_comp_try :: proc(pressed: bool) -> bool {
-	if pressed && dock_comp_ready() {
-		do_dock()
-		return true
-	}
-	return false
+		linalg.dot(g.p.b.f, -g.station.b.f) > 0.9
 }
 
 // ---------------------------------------------------------------- per-frame
@@ -719,7 +711,7 @@ flight_update :: proc(dt: f32) {
 	roll(&st.b, st.spin * dt)
 	orthonormalize(&st.b)
 	can_dock, inside := dock_check()
-	if can_dock || dock_comp_try(g.p.dock_comp && key_pressed(.C)) {
+	if can_dock || (key_pressed(.C) && dock_comp_ready()) {
 		do_dock()
 		return
 	}

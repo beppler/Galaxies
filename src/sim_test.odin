@@ -99,17 +99,25 @@ docking_computer_docks_when_in_range :: proc(t: ^testing.T) {
 	orthonormalize(&g.p.b)
 	g.p.pos = {0, 0, ST_L + 600}
 	g.p.speed = 300
-	testing.expect(t, !dock_comp_try(true)) // not fitted
+	testing.expect(t, !dock_comp_ready()) // not fitted
 	g.p.dock_comp = true
-	testing.expect(t, !dock_comp_try(false)) // key not pressed
 	g.p.pos = {0, 0, ST_L + 2000}
-	testing.expect(t, !dock_comp_try(true)) // too far from the station
+	testing.expect(t, !dock_comp_ready()) // too far from the station
 	g.p.pos = {0, 0, ST_L + 600}
 	saved_f := g.p.b.f
 	g.p.b.f = -saved_f
-	testing.expect(t, !dock_comp_try(true)) // pointing away from the slot
+	testing.expect(t, !dock_comp_ready()) // pointing away from the slot
 	g.p.b.f = saved_f
-	testing.expect(t, dock_comp_try(true))
+	testing.expect(t, dock_comp_ready())
+	flight_update(1.0 / 60) // in range but C not pressed
+	testing.expect_value(t, g.state, State.Flight)
+	test_key = .C
+	defer test_key = .KEY_NULL
+	g.p.pos = {0, 0, ST_L + 2000}
+	flight_update(1.0 / 60) // C pressed but too far away
+	testing.expect_value(t, g.state, State.Flight)
+	g.p.pos = {0, 0, ST_L + 600}
+	flight_update(1.0 / 60)
 	testing.expect_value(t, g.state, State.Docked)
 }
 
@@ -127,13 +135,33 @@ trade_and_equip_money :: proc(t: ^testing.T) {
 	testing.expect_value(t, g.p.cargo[0], 0)
 	testing.expect_value(t, g.p.cash, 250)
 	g.p.cash = 100
-	buy_equip(4) // galactic drive costs 50000
+	buy_equip(.GalDrive) // galactic drive costs 50000
 	testing.expect(t, !g.p.gal_drive)
 	testing.expect_value(t, g.p.cash, 100)
 	g.p.fuel = MAX_FUEL - 10
-	buy_equip(0) // 20 for 10 fuel
+	buy_equip(.Fuel) // 20 for 10 fuel
 	testing.expect_value(t, g.p.fuel, MAX_FUEL)
 	testing.expect_value(t, g.p.cash, 80)
+}
+
+@(test)
+buy_stops_at_full_hold_and_empty_stock :: proc(t: ^testing.T) {
+	new_game()
+	defer free_game()
+	g.market.qty[0] = 50
+	g.market.price[0] = 10
+	g.p.cash = 10000
+	g.p.cargo_cap = 20
+	g.p.cargo[1] = 17 // 3t of room left
+	buy(0, 10)
+	testing.expect_value(t, g.p.cargo[0], 3)
+	testing.expect_value(t, g.market.qty[0], 47)
+	testing.expect_value(t, g.p.cash, 10000 - 3 * 10)
+	g.p.cargo[1] = 0
+	g.market.qty[0] = 2 // stock, not hold or cash, is the limit now
+	buy(0, 10)
+	testing.expect_value(t, g.p.cargo[0], 5)
+	testing.expect_value(t, g.market.qty[0], 0)
 }
 
 @(test)
@@ -150,6 +178,9 @@ apply_save_clamps :: proc(t: ^testing.T) {
 	testing.expect_value(t, g.p.cargo[4], 3)
 	testing.expect_value(t, g.epoch, u32(1))
 	testing.expect(t, !apply_save(SaveData{galaxy = 9}))
+	over := SaveData{cargo_cap = 20}
+	over.cargo[0] = 21 // more than the hold can carry
+	testing.expect(t, !apply_save(over))
 }
 
 @(test)
