@@ -17,7 +17,7 @@ selected system, G galactic hyperdrive, F3 galactic chart (ENTER sets destinatio
 Docking: fly nose-first into the rotating station slot, match its roll, speed < 220.
 Docked: F1 status, F2 market (B/S buy/sell, Shift = x10), F3 chart, F4 equipment, F5/L launch, F9 save.
 
-Saves go to the user config dir (`odin-elite/save.json`) on dock/launch.
+Saves go to the user config dir (`Elite/save.json`) on dock/launch.
 
 ## Ideas / not yet done
 Planets, missions, more ship types, gamepad support.
