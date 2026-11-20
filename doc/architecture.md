@@ -117,7 +117,7 @@ never saved: you always resume docked. After death, Enter reloads the last save.
 
 ## Testing
 
-`./build.sh test` (`odin test src`, single-threaded). Tests: `galaxy_test.odin` (generation),
+`make test` (`odin test src`, single-threaded). Tests: `galaxy_test.odin` (generation),
 `save_test.odin` (round trip), `sim_test.odin` (headless flight simulation, docking, save clamping).
 Because tests run without a window, input and audio go through `platform.odin` / `play` stubs under
 `when ODIN_TEST`, and `save_path` refuses to touch the real config dir unless `save_dir` is set.
@@ -125,7 +125,6 @@ On Windows, linking raylib into the test binary breaks the runner, hence the stu
 
 ## Build and CI
 
-`build.sh` / `build.bat` wrap `odin build src -o:speed` (`test`, `run` subcommands; `build.bat debug`
-keeps the console on Windows). The toolchain is pinned in `mise.toml`. GitHub Actions
+`make` wraps `odin build src -o:speed` (`run`, `test` targets). The toolchain is pinned in `mise.toml`. GitHub Actions
 (`.github/workflows/test.yml`) runs tests and a release build on Ubuntu and Windows; the Windows
 release is built with `-subsystem:windows`.

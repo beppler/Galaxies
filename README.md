@@ -16,10 +16,11 @@ Linux also needs X11/GL/ALSA dev
 packages (`libx11-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libasound2-dev`) and clang.
 
 ```shell
-./build.sh        # or build.bat on Windows;  ./build.sh run | test
+make              # or make run | test
 ```
 
-The Windows release build has no console window; use `build.bat debug` to build and run with one (logs and panics visible).
+Windows needs `make` (e.g. from Chocolatey or MSYS2); the release build is then
+launched without a console window, same as the CI release.
 
 ## Controls
 
